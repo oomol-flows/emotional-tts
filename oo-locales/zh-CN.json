@@ -23,5 +23,10 @@
   "sampling-temperature-higher-more-diverse-lower-more-stable": "采样温度（越高 = 越多样，越低 = 越稳定）",
   "top-p-nucleus-sampling-parameter": "Top-p 核采样参数",
   "top-k-sampling-parameter-0-to-disable": "Top-k采样参数（0表示禁用）",
-  "maximum-tokens-per-sentence-segment-80-200-recommended": "每个句子片段的最大标记数（建议为80-200）"
+  "maximum-tokens-per-sentence-segment-80-200-recommended": "每个句子片段的最大标记数（建议为80-200）",
+  "srt-subtitle-synthesis": "SRT 字幕合成",
+  "srt-subtitle-synthesis-1": "SRT 字幕合成 #1",
+  "synthesize-speech-from-srt-subtitle-files-with-timing-synchronizat": "从 SRT 字幕文件合成语音,支持时间同步。自动生成与字幕时间戳对齐的音频。",
+  "srt-subtitle-file-to-synthesize": "要合成的 SRT 字幕文件",
+  "speed-adjustment-factor-1-0-normal-speed": "速度调整因子（1.0 = 正常速度）"
 }

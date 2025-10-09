@@ -23,5 +23,10 @@
   "sampling-temperature-higher-more-diverse-lower-more-stable": "Sampling temperature (higher = more diverse, lower = more stable)",
   "top-p-nucleus-sampling-parameter": "Top-p nucleus sampling parameter",
   "top-k-sampling-parameter-0-to-disable": "Top-k sampling parameter (0 to disable)",
-  "maximum-tokens-per-sentence-segment-80-200-recommended": "Maximum tokens per sentence segment (80-200 recommended)"
+  "maximum-tokens-per-sentence-segment-80-200-recommended": "Maximum tokens per sentence segment (80-200 recommended)",
+  "srt-subtitle-synthesis": "SRT Subtitle Synthesis",
+  "srt-subtitle-synthesis-1": "SRT Subtitle Synthesis #1",
+  "synthesize-speech-from-srt-subtitle-files-with-timing-synchronizat": "Synthesize speech from SRT subtitle files with timing synchronization. Automatically generates audio aligned with subtitle timestamps.",
+  "srt-subtitle-file-to-synthesize": "SRT subtitle file to synthesize",
+  "speed-adjustment-factor-1-0-normal-speed": "Speed adjustment factor (1.0 = normal speed)"
 }

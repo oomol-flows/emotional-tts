@@ -17,7 +17,8 @@
       "Read(//tmp/**)",
       "Bash(pip uninstall:*)",
       "Read(//root/.local/share/uv/python/**)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

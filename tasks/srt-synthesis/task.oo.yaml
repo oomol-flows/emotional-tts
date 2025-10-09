@@ -1,0 +1,231 @@
+inputs_def:
+  - handle: srt_file
+    description: "%srt-subtitle-file-to-synthesize%"
+    json_schema:
+      type: string
+      ui:widget: file
+      ui:options:
+        filters:
+          - name: Subtitle Files
+            extensions:
+              - srt
+        excludeAll: true
+    nullable: false
+
+  - handle: spk_audio_prompt
+    description: "%voice-timbre-reference-audio-for-speaker-cloning%"
+    json_schema:
+      type: string
+      ui:widget: file
+      ui:options:
+        filters:
+          - name: Audio Files
+            extensions:
+              - wav
+              - mp3
+              - flac
+              - m4a
+        excludeAll: true
+    nullable: false
+
+  - handle: emo_control_mode
+    description: "%emotion-control-method-speaker-same-as-voice-reference-use-emo_a%"
+    json_schema:
+      type: string
+      enum:
+        - speaker
+        - reference
+        - vector
+        - text
+    value: speaker
+    nullable: true
+
+  - group: Optional
+    collapsed: true
+
+  - handle: emo_audio_prompt
+    description: "%emotional-reference-audio-used-when-emo_control_mode-is-referenc%"
+    json_schema:
+      type: string
+      ui:widget: file
+      ui:options:
+        filters:
+          - name: Audio Files
+            extensions:
+              - wav
+              - mp3
+              - flac
+              - m4a
+        excludeAll: true
+    value:
+    nullable: true
+
+  - handle: emo_weight
+    description: "%emotion-intensity-weight-0-0-1-0-recommended-0-6-0-7-for-text-mo%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.65
+    nullable: true
+
+  - handle: emo_text
+    description: "%emotion-description-text-used-when-emo_control_mode-is-text%"
+    json_schema:
+      type: string
+    value:
+    nullable: true
+
+  - handle: emo_vec_happy
+    description: "%happy-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: emo_vec_angry
+    description: "%angry-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: emo_vec_sad
+    description: "%sad-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: emo_vec_afraid
+    description: "%afraid-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: emo_vec_disgusted
+    description: "%disgusted-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: emo_vec_melancholic
+    description: "%melancholic-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: emo_vec_surprised
+    description: "%surprised-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: emo_vec_calm
+    description: "%calm-emotion-intensity-0-0-1-0%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0
+    nullable: true
+
+  - handle: use_random
+    description: "%enable-random-sampling-reduces-voice-cloning-fidelity-but-adds-v%"
+    json_schema:
+      type: boolean
+    value: false
+    nullable: true
+
+  - handle: max_mel_tokens
+    description: "%maximum-generation-tokens-audio-may-be-truncated-if-too-small%"
+    json_schema:
+      type: integer
+      minimum: 50
+      maximum: 1500
+    value: 1500
+    nullable: true
+
+  - handle: temperature
+    description: "%sampling-temperature-higher-more-diverse-lower-more-stable%"
+    json_schema:
+      type: number
+      minimum: 0.1
+      maximum: 2
+    value: 0.8
+    nullable: true
+
+  - handle: top_p
+    description: "%top-p-nucleus-sampling-parameter%"
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.8
+    nullable: true
+
+  - handle: top_k
+    description: "%top-k-sampling-parameter-0-to-disable%"
+    json_schema:
+      type: integer
+      minimum: 0
+      maximum: 100
+    value: 30
+    nullable: true
+
+  - handle: max_text_tokens_per_segment
+    description: "%maximum-tokens-per-sentence-segment-80-200-recommended%"
+    json_schema:
+      type: integer
+      minimum: 20
+      maximum: 200
+    value: 120
+    nullable: true
+
+  - handle: speed_factor
+    description: "%speed-adjustment-factor-1-0-normal-speed%"
+    json_schema:
+      type: number
+      minimum: 0.5
+      maximum: 2.0
+    value: 1
+    nullable: true
+
+outputs_def:
+  - handle: audio
+    description: "Synthesized audio synchronized with SRT timestamps"
+    json_schema:
+      type: string
+
+  - handle: srt_with_metadata
+    description: "SRT file with audio generation metadata"
+    json_schema:
+      type: string
+
+executor:
+  name: python
+  options:
+    entry: __init__.py
+    spawn: false
+
+title: "%srt-subtitle-synthesis%"
+icon: ":carbon:closed-caption:"
+description: "%synthesize-speech-from-srt-subtitle-files-with-timing-synchronizat%"

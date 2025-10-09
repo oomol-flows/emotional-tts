@@ -13,7 +13,7 @@ This OOMOL package provides a powerful text-to-speech system that can:
 
 Perfect for content creators, audiobook producers, accessibility applications, or anyone who needs realistic AI voices.
 
-## Available Block
+## Available Blocks
 
 ### IndexTTS2 Speech Synthesis
 
@@ -26,17 +26,31 @@ Perfect for content creators, audiobook producers, accessibility applications, o
 - **Multi-language:** Works with both Chinese and English text
 - **Professional Quality:** Produces studio-grade audio suitable for production use
 
+### SRT Subtitle Synthesis
+
+**What it does:** Converts SRT subtitle files into synchronized spoken audio, automatically aligning generated speech with subtitle timestamps.
+
+**Key Features:**
+
+- **Automatic Timing:** Generates audio synchronized with your subtitle timestamps
+- **Batch Processing:** Processes all subtitle entries in one go
+- **Full Emotion Control:** Uses the same emotion control features as the basic synthesis block
+- **Speed Adjustment:** Optionally adjust speech speed to better fit subtitle timing
+- **Metadata Output:** Generates an annotated SRT file with audio duration information
+
 ## Use Cases
 
 ### 1. Content Creation
 - Generate voiceovers for videos without recording
 - Create podcast episodes in different voices
 - Produce audiobooks with consistent narration
+- **NEW:** Convert video subtitles to synchronized narration tracks
 
 ### 2. Accessibility
 - Convert written content to audio for visually impaired users
 - Create audio versions of documents and articles
 - Generate multilingual audio content
+- **NEW:** Generate audio descriptions from subtitle files
 
 ### 3. Prototyping & Design
 - Test different voice styles for your project
@@ -47,10 +61,16 @@ Perfect for content creators, audiobook producers, accessibility applications, o
 - Produce educational audio materials
 - Create language learning content
 - Generate consistent instructional narration
+- **NEW:** Create synchronized audio lessons from subtitle transcripts
+
+### 5. Video Production
+- **NEW:** Add narration to silent videos using subtitle files
+- **NEW:** Create dubbed versions with customized voices
+- **NEW:** Generate audio tracks synchronized with existing subtitles
 
 ## How to Use
 
-### Basic Usage
+### Basic Text-to-Speech Usage
 
 1. **Prepare Your Inputs:**
    - **Text:** The content you want to convert to speech
@@ -69,6 +89,34 @@ Perfect for content creators, audiobook producers, accessibility applications, o
 
 4. **Run Your Flow:**
    - The block will generate a WAV audio file with your synthesized speech
+
+### SRT Subtitle-to-Speech Usage
+
+1. **Prepare Your Inputs:**
+   - **SRT File:** Your subtitle file (must be in valid SRT format with timestamps)
+   - **Voice Sample:** A 3-15 second audio file of the voice you want to clone
+
+2. **Add the Block to Your Flow:**
+   - Drag the "SRT Subtitle Synthesis" block into your OOMOL workflow
+   - Upload your SRT subtitle file
+   - Upload your voice reference audio
+   - (Optional) Choose emotion control mode and adjust settings
+
+3. **Configure Optional Settings:**
+   - **Speed Factor:** Adjust speech speed (0.5-2.0x, default: 1.0)
+   - **Emotion Controls:** Same options as basic synthesis
+   - **Quality Parameters:** Temperature, top-p, top-k settings
+
+4. **Run Your Flow:**
+   - The block will process all subtitles and generate:
+     - A synchronized audio file (WAV) aligned with subtitle timestamps
+     - A metadata SRT file showing audio durations vs. target durations
+
+**How It Works:**
+- Each subtitle entry is synthesized individually
+- Generated audio segments are placed at their correct timestamps
+- Silence is automatically added between segments
+- The final audio duration matches the last subtitle's end time
 
 ### Emotion Control Options
 
@@ -148,6 +196,19 @@ If automatic setup fails, the models are stored in:
 - Music or background sounds
 - Very short samples (<3 seconds)
 
+### SRT Subtitle Files
+✅ **Best Practices:**
+- Use properly formatted SRT files with valid timestamps
+- Keep subtitle text concise (shorter segments work better)
+- Ensure subtitle durations are reasonable (at least 2-3 seconds per entry)
+- Use UTF-8 encoding for international characters
+- Test with speed_factor adjustment if audio is too fast/slow for timing
+
+⚠️ **Known Limitations:**
+- Very short subtitle durations (<1 second) may not fit the generated audio
+- Very long subtitle texts may be truncated (use max_mel_tokens parameter)
+- The generated audio is placed at exact timestamps (may overlap if subtitles are too close)
+
 ### Emotion Control
 - **For natural results:** Use Speaker mode with a well-recorded sample
 - **For creative control:** Try Text mode with emotion weight 0.6-0.7
@@ -212,16 +273,24 @@ For commercial licensing inquiries, contact: indexspeech@bilibili.com
 - **Discord:** Join the community at https://discord.gg/uT32E7KDmy
 - **QQ Groups:** 553460296, 663272642 (Chinese community)
 
-## Example Workflow
+## Example Workflows
 
-Here's a simple example of how to use this in OOMOL:
+### Basic Text-to-Speech Workflow
 
 1. **Text Input Block** → Type your script
 2. **File Input Block** → Upload your voice sample (5-10 seconds)
 3. **IndexTTS2 Block** → Connect text and audio inputs
 4. **Audio Output Block** → Save or play the generated speech
 
-That's it! You now have professional text-to-speech with emotion control.
+### SRT Subtitle Synthesis Workflow
+
+1. **File Input Block** → Upload your SRT subtitle file
+2. **File Input Block** → Upload your voice sample (5-10 seconds)
+3. **SRT Subtitle Synthesis Block** → Connect both file inputs
+4. **Audio Output Block** → Save the synchronized audio track
+5. **File Output Block** → Save the metadata SRT file (optional)
+
+**Use Case Example:** You have a video with subtitles but no audio. Upload the SRT file, provide a voice sample, and generate a synchronized narration track that matches the subtitle timing perfectly!
 
 ## License
 
