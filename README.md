@@ -1,174 +1,238 @@
-# IndexTTS2 OOMOL Task Block
+# IndexTTS2 Text-to-Speech for OOMOL
 
-IndexTTS2: A Breakthrough in Emotionally Expressive and Duration-Controlled Auto-Regressive Zero-Shot Text-to-Speech
+Transform any text into natural, emotionally expressive speech with AI-powered voice cloning.
 
-## Overview
+## What is This?
 
-This OOMOL task block provides an interface to IndexTTS2, a state-of-the-art zero-shot text-to-speech system with:
+This OOMOL package provides a powerful text-to-speech system that can:
 
-- **Voice Cloning**: Clone any voice from a short audio reference (3-15 seconds)
-- **Emotion Control**: Four different emotion control modes
-- **Multi-language Support**: Chinese and English synthesis
-- **High Quality**: Emotionally expressive and natural-sounding speech
+- **Clone any voice** from a short audio sample (just 3-15 seconds!)
+- **Control emotions** in the generated speech (happy, sad, angry, calm, etc.)
+- **Support multiple languages** including Chinese and English
+- **Generate high-quality audio** that sounds natural and expressive
 
-## Features
+Perfect for content creators, audiobook producers, accessibility applications, or anyone who needs realistic AI voices.
 
-### Emotion Control Modes
+## Available Block
 
-1. **Speaker Mode** - Use the emotion from the speaker's voice reference
-2. **Reference Mode** - Use a separate emotional reference audio
-3. **Vector Mode** - Control 8 emotion dimensions via sliders:
-   - Happy, Angry, Sad, Afraid
-   - Disgusted, Melancholic, Surprised, Calm
-4. **Text Mode** - Describe emotions in natural language (e.g., "危险在悄悄逼近")
+### IndexTTS2 Speech Synthesis
 
-### Advanced Parameters
+**What it does:** Converts your text into spoken audio using an AI voice that you provide.
 
-- **Temperature** (0.1-2.0): Controls diversity vs stability
-- **Top-p/Top-k**: Nucleus and top-k sampling parameters
-- **Max Mel Tokens**: Maximum audio length
-- **Text Segmentation**: Automatic sentence splitting for long texts
+**Key Features:**
+
+- **Voice Cloning:** Upload a short recording of any voice, and the AI will mimic that voice
+- **Emotion Control:** Choose how the voice should sound (excited, calm, worried, etc.)
+- **Multi-language:** Works with both Chinese and English text
+- **Professional Quality:** Produces studio-grade audio suitable for production use
+
+## Use Cases
+
+### 1. Content Creation
+- Generate voiceovers for videos without recording
+- Create podcast episodes in different voices
+- Produce audiobooks with consistent narration
+
+### 2. Accessibility
+- Convert written content to audio for visually impaired users
+- Create audio versions of documents and articles
+- Generate multilingual audio content
+
+### 3. Prototyping & Design
+- Test different voice styles for your project
+- Create audio mockups without hiring voice actors
+- Experiment with emotional tones for storytelling
+
+### 4. Education & Training
+- Produce educational audio materials
+- Create language learning content
+- Generate consistent instructional narration
+
+## How to Use
+
+### Basic Usage
+
+1. **Prepare Your Inputs:**
+   - **Text:** The content you want to convert to speech
+   - **Voice Sample:** A 3-15 second audio file of the voice you want to clone (WAV, MP3, or FLAC)
+
+2. **Add the Block to Your Flow:**
+   - Drag the "IndexTTS2 Speech Synthesis" block into your OOMOL workflow
+   - Connect your text input
+   - Upload your voice reference audio
+
+3. **Choose Emotion Control Mode:**
+   - **Speaker Mode** (Default): Use the emotion from your voice sample
+   - **Reference Mode**: Use a different audio file to control emotion
+   - **Vector Mode**: Use sliders to mix different emotions
+   - **Text Mode**: Describe the emotion you want in words
+
+4. **Run Your Flow:**
+   - The block will generate a WAV audio file with your synthesized speech
+
+### Emotion Control Options
+
+#### Simple: Speaker Mode
+The generated speech matches the emotion in your voice sample. If your sample sounds happy, the output will sound happy.
+
+#### Advanced: Reference Mode
+Use two audio files:
+- **Voice Sample:** Provides the voice timbre (who it sounds like)
+- **Emotion Sample:** Provides the emotional style (how it sounds)
+
+Example: Clone Person A's voice but use Person B's energetic speaking style.
+
+#### Precise: Vector Mode
+Fine-tune emotion using 8 sliders:
+- Happy
+- Angry
+- Sad
+- Afraid
+- Disgusted
+- Melancholic
+- Surprised
+- Calm
+
+Mix and match intensities (0.0 to 1.0) to create the perfect emotional tone.
+
+#### Creative: Text Mode
+Describe the emotion you want in natural language:
+- "The danger is approaching quietly"
+- "You scared me to death! Are you a ghost?"
+- "This is the best news I've heard all day"
+
+The AI will interpret your description and apply that emotional style.
+
+## Requirements
+
+### System Requirements
+- **GPU:** CUDA-capable GPU recommended (NVIDIA)
+- **Memory:** 12GB VRAM (for GPU) or 16GB RAM (for CPU)
+- **Storage:** ~20GB free space for models and dependencies
+
+### Audio Requirements
+- **Voice Sample Quality:** Clear, noise-free recording
+- **Duration:** 3-15 seconds (longer is not always better)
+- **Single Speaker:** Only one person speaking
+- **Format:** WAV, MP3, FLAC, or M4A
 
 ## Installation
 
-The task block is fully self-contained and automatically sets up everything on first use:
+### Automatic Setup
+This package is fully self-contained. On first use, OOMOL will automatically:
 
-1. **IndexTTS Package**: Installed from GitHub (`pip install git+https://github.com/index-tts/index-tts.git`)
-2. **Model Files**: Downloaded from HuggingFace (~10GB)
-3. **Dependencies**: All Python packages installed via Poetry
+1. Install all required Python packages
+2. Download the IndexTTS2 AI model (~10GB)
+3. Set up the processing environment
 
-### Requirements
+**First-time setup takes 10-20 minutes** depending on your internet speed. After that, the block is ready to use instantly.
 
-- Python 3.10-3.12
-- CUDA-capable GPU (recommended)
-- ~12GB VRAM for FP16 inference
-- ~20GB disk space for models and packages
+### Manual Setup (Optional)
+If automatic setup fails, the models are stored in:
+```
+/oomol-driver/oomol-storage/indextts-checkpoints/
+```
 
-### Bootstrap Process
+## Tips for Best Results
 
-The bootstrap script automatically:
-1. Installs Node.js dependencies
-2. Installs Python dependencies via Poetry
-3. Installs IndexTTS package from GitHub
-4. Downloads IndexTTS2 model checkpoints to `/oomol-driver/oomol-storage/indextts-checkpoints/`
+### Voice Quality
+✅ **Do:**
+- Use clean, professional-quality audio
+- Record in a quiet environment
+- Use a single speaker only
+- Provide 5-10 seconds of clear speech
 
-All setup is handled automatically - no manual intervention required!
+❌ **Avoid:**
+- Noisy or echo-filled recordings
+- Multiple speakers talking
+- Music or background sounds
+- Very short samples (<3 seconds)
 
-## Usage
+### Emotion Control
+- **For natural results:** Use Speaker mode with a well-recorded sample
+- **For creative control:** Try Text mode with emotion weight 0.6-0.7
+- **For precise tuning:** Use Vector mode, keeping total emotion sum ≤ 0.8
+- **For dramatic effect:** Combine Reference mode with expressive emotion samples
 
-### Basic Example
+### Text Input
+- Longer texts are automatically split into sentences
+- Supports punctuation for natural pauses
+- Works best with properly formatted text
+- Both English and Chinese are supported
 
-1. **Input**:
-   - Text: "欢迎大家来体验IndexTTS2"
-   - Speaker Audio: Upload a 3-15 second voice sample
-   - Emotion Mode: Speaker
+## Advanced Parameters
 
-2. **Output**: Generated speech audio file (.wav)
+For users who want more control:
 
-### Advanced Usage
-
-#### Emotion Reference Mode
-Use a separate audio file to control the emotion while keeping the speaker's voice:
-- Speaker Audio: Person A's voice (timbre)
-- Emotion Audio: Person B's emotional speech (emotion style)
-- Result: Person A's voice with Person B's emotion
-
-#### Emotion Vector Mode
-Fine-tune emotion intensities:
-- Happy: 0.3
-- Surprised: 0.45
-- Calm: 0.0
-- Others: 0.0
-
-#### Text Emotion Mode
-Describe the emotion in text:
-- Text: "快躲起来!是他要来了!"
-- Emotion Text: "你吓死我了!你是鬼吗?"
-- Emotion Weight: 0.6
-
-## Parameters Reference
-
-| Parameter | Type | Range | Default | Description |
-|-----------|------|-------|---------|-------------|
-| text | string | - | Required | Text to synthesize |
-| spk_audio_prompt | file | .wav/.mp3 | Required | Voice reference audio |
-| emo_control_mode | enum | 4 modes | speaker | Emotion control method |
-| emo_audio_prompt | file | .wav/.mp3 | null | Emotional reference audio |
-| emo_weight | number | 0.0-1.0 | 0.65 | Emotion intensity |
-| emo_text | string | - | null | Emotion description |
-| emo_vec_* | number | 0.0-1.0 | 0.0 | 8 emotion sliders |
-| use_random | boolean | - | false | Random sampling |
-| temperature | number | 0.1-2.0 | 0.8 | Sampling temperature |
-| top_p | number | 0.0-1.0 | 0.8 | Nucleus sampling |
-| top_k | integer | 0-100 | 30 | Top-k sampling |
-| max_mel_tokens | integer | 50-1500 | 1500 | Max audio tokens |
-| max_text_tokens_per_segment | integer | 20-200 | 120 | Sentence splitting |
-
-## Model Information
-
-- **Model**: IndexTTS2 (Bilibili AI)
-- **Version**: 2.0.0
-- **License**: Bilibili IndexTTS License
-- **Source**: [github.com/index-tts/index-tts](https://github.com/index-tts/index-tts)
-- **Paper**: [arXiv:2506.21619](https://arxiv.org/abs/2506.21619)
-
-## Tips
-
-1. **Voice Reference Quality**:
-   - Use clear, noise-free audio (3-15 seconds)
-   - Single speaker only
-   - Higher quality = better cloning
-
-2. **Emotion Control**:
-   - For text mode, use emo_weight 0.6-0.7
-   - Vector mode: total emotion sum should be ≤ 0.8
-   - Reference mode works best with clear emotional expression
-
-3. **Performance**:
-   - FP16 inference enabled by default
-   - RTF (Real-Time Factor) typically 0.1-0.3x
-   - Longer texts auto-split into segments
-
-4. **Text Formatting**:
-   - Supports Pinyin control: "DE5" for tone 5
-   - See `/oomol-driver/oomol-storage/indextts-checkpoints/pinyin.vocab`
+| Parameter | Range | Description |
+|-----------|-------|-------------|
+| **Temperature** | 0.1 - 2.0 | Higher = more varied, Lower = more stable (default: 0.8) |
+| **Emotion Weight** | 0.0 - 1.0 | How strong the emotion should be (default: 0.65) |
+| **Max Audio Length** | 50 - 1500 tokens | Maximum length of generated audio |
+| **Sentence Splitting** | 20 - 200 tokens | How to split long texts into segments |
 
 ## Troubleshooting
 
-### Out of Memory
-- Reduce `max_mel_tokens`
-- Reduce `max_text_tokens_per_segment`
-- Use shorter text inputs
-
 ### Audio Quality Issues
-- Check reference audio quality
-- Adjust `temperature` (lower = more stable)
-- Try different `emo_weight` values
+- **Problem:** Voice doesn't sound like the reference
+  - **Solution:** Use a higher-quality reference audio (clear, noise-free)
 
-### Model Not Found
-- Bootstrap script will auto-download on first run
-- Manual download: `huggingface-cli download IndexTeam/IndexTTS-2 --local-dir /oomol-driver/oomol-storage/indextts-checkpoints`
+- **Problem:** Emotion is too strong or too weak
+  - **Solution:** Adjust the emotion weight (try 0.5-0.8 range)
 
-## Citation
+- **Problem:** Voice sounds robotic
+  - **Solution:** Lower the temperature to 0.6-0.7 for more stability
 
-```bibtex
-@article{zhou2025indextts2,
-  title={IndexTTS2: A Breakthrough in Emotionally Expressive and Duration-Controlled Auto-Regressive Zero-Shot Text-to-Speech},
-  author={Siyi Zhou, Yiquan Zhou, Yi He, Xun Zhou, Jinchao Wang, Wei Deng, Jingchen Shu},
-  journal={arXiv preprint arXiv:2506.21619},
-  year={2025}
-}
-```
+### Technical Issues
+- **Problem:** Out of memory error
+  - **Solution:** Reduce max audio length or use shorter text inputs
+
+- **Problem:** Model not found
+  - **Solution:** Wait for automatic download, or restart OOMOL to retry
+
+- **Problem:** Slow processing
+  - **Solution:** GPU processing is 10-20x faster than CPU
+
+## Model Information
+
+- **Model:** IndexTTS2 by Bilibili AI
+- **Technology:** Zero-shot text-to-speech with emotion control
+- **Languages:** Chinese, English
+- **License:** Bilibili IndexTTS License
+- **Source:** [github.com/index-tts/index-tts](https://github.com/index-tts/index-tts)
+- **Research Paper:** [arXiv:2506.21619](https://arxiv.org/abs/2506.21619)
+
+### Commercial Use
+For commercial licensing inquiries, contact: indexspeech@bilibili.com
+
+## Support & Community
+
+- **Demo:** Try the online demo at [HuggingFace Space](https://huggingface.co/spaces/IndexTeam/IndexTTS-2-Demo)
+- **Issues:** Report bugs on [GitHub](https://github.com/index-tts/index-tts/issues)
+- **Discord:** Join the community at https://discord.gg/uT32E7KDmy
+- **QQ Groups:** 553460296, 663272642 (Chinese community)
+
+## Example Workflow
+
+Here's a simple example of how to use this in OOMOL:
+
+1. **Text Input Block** → Type your script
+2. **File Input Block** → Upload your voice sample (5-10 seconds)
+3. **IndexTTS2 Block** → Connect text and audio inputs
+4. **Audio Output Block** → Save or play the generated speech
+
+That's it! You now have professional text-to-speech with emotion control.
 
 ## License
 
-This task block uses IndexTTS2 which is licensed under the Bilibili IndexTTS License. See the LICENSE file for details.
+This package uses IndexTTS2, which is licensed under the Bilibili IndexTTS License. Please review the license terms before commercial use.
 
-For commercial usage, please contact: indexspeech@bilibili.com
+## Credits
 
-## Support
+- **IndexTTS2 Model:** Bilibili AI Team
+- **Research:** Zhou et al. (2025)
+- **OOMOL Package:** alwaysmavs
 
-- GitHub Issues: [index-tts/index-tts](https://github.com/index-tts/index-tts/issues)
-- Demo: [HuggingFace Space](https://huggingface.co/spaces/IndexTeam/IndexTTS-2-Demo)
-- QQ Group: 553460296, 663272642
-- Discord: https://discord.gg/uT32E7KDmy
+---
+
+**Ready to start?** Add the IndexTTS2 block to your OOMOL workflow and bring your text to life with AI voices!

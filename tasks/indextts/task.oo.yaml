@@ -3,6 +3,7 @@ inputs_def:
     description: Target text to synthesize into speech
     json_schema:
       type: string
+      ui:widget: text
     nullable: false
 
   - handle: spk_audio_prompt
@@ -34,6 +35,9 @@ inputs_def:
     value: speaker
     nullable: true
 
+  - group: Optional
+    collapsed: true
+
   - handle: emo_audio_prompt
     description: Emotional reference audio (used when emo_control_mode is 'reference')
     json_schema:
@@ -48,7 +52,7 @@ inputs_def:
               - flac
               - m4a
         excludeAll: true
-    value: null
+    value:
     nullable: true
 
   - handle: emo_weight
@@ -64,7 +68,7 @@ inputs_def:
     description: Emotion description text (used when emo_control_mode is 'text')
     json_schema:
       type: string
-    value: null
+    value:
     nullable: true
 
   - handle: emo_vec_happy
@@ -73,7 +77,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: emo_vec_angry
@@ -82,7 +86,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: emo_vec_sad
@@ -91,7 +95,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: emo_vec_afraid
@@ -100,7 +104,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: emo_vec_disgusted
@@ -109,7 +113,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: emo_vec_melancholic
@@ -118,7 +122,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: emo_vec_surprised
@@ -127,7 +131,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: emo_vec_calm
@@ -136,7 +140,7 @@ inputs_def:
       type: number
       minimum: 0
       maximum: 1
-    value: 0.0
+    value: 0
     nullable: true
 
   - handle: use_random
@@ -181,7 +185,6 @@ inputs_def:
       maximum: 100
     value: 30
     nullable: true
-
   - handle: max_text_tokens_per_segment
     description: Maximum tokens per sentence segment (80-200 recommended)
     json_schema:

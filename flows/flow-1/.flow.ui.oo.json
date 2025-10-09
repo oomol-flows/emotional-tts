@@ -1,11 +1,17 @@
 {
   "nodes": {
     "indextts#1": {
-      "contentWidth": 580.0585760466399,
       "rfNode": {
         "position": {
-          "x": 247,
-          "y": 398
+          "x": 435.77073610849095,
+          "y": 907.4160891854332
+        }
+      },
+      "sections": {
+        "inputs": {
+          "groupCollapsed": {
+            "Optional": true
+          }
         }
       }
     }
