@@ -1,4 +1,4 @@
-version: 0.0.1
+version: 0.0.2
 scripts:
   bootstrap: >
     npm install
@@ -68,3 +68,4 @@ name: emotional-tts
 releaseNotes: init
 displayName: "%emotional-tts%"
 description: "%transform-any-text-into-natural-emotionally-expressive-speech-wi%"
+repository: https://github.com/oomol-flows/emotional-tts.git
