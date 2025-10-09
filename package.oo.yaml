@@ -1,0 +1,52 @@
+version: 0.0.1
+scripts:
+  # Script executed when the container is first loaded
+  bootstrap: |
+    npm install
+    poetry install --no-root
+    apt update && apt install -y openssh-client ffmpeg libavutil58 libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libfst-dev
+    wget https://static.oomol.com/sshexec/v1.0.12/installer.sh --output-document /tmp/installer.sh
+    bash +x /tmp/installer.sh
+
+    # Install text normalization dependency (wetext instead of WeTextProcessing)
+    echo "Installing wetext for text normalization..."
+    pip install wetext
+
+    # Install IndexTTS package from GitHub
+    echo "Installing IndexTTS package..."
+    if ! python -c "import indextts" 2>/dev/null; then
+      # Clone and patch IndexTTS to use wetext on Linux
+      cd /tmp
+      git clone https://github.com/index-tts/index-tts.git --depth 1
+      cd index-tts
+
+      # Patch front.py to use wetext on all platforms
+      sed -i '88,111d' indextts/utils/front.py
+      sed -i '87a\    def load(self):\n        # print(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))\n        # sys.path.append(model_dir)\n        if self.zh_normalizer is not None and self.en_normalizer is not None:\n            return\n\n        # Use wetext for all platforms (compatible with Linux/Mac/Windows)\n        from wetext import Normalizer\n\n        self.zh_normalizer = Normalizer(remove_erhua=False, lang="zh", operator="tn")\n        self.en_normalizer = Normalizer(lang="en", operator="tn")' indextts/utils/front.py
+
+      # Install patched version without dependencies
+      pip install -e . --no-deps
+
+      echo "IndexTTS package installed successfully"
+    else
+      echo "IndexTTS package already installed"
+    fi
+
+    # Download IndexTTS2 model checkpoints
+    mkdir -p /oomol-driver/oomol-storage/indextts-checkpoints
+
+    # Check if model already downloaded
+    if [ ! -f "/oomol-driver/oomol-storage/indextts-checkpoints/config.yaml" ]; then
+      echo "Downloading IndexTTS2 model from HuggingFace..."
+
+      # Install huggingface-cli if not available
+      pip install -U "huggingface-hub[cli]"
+
+      # Download model files to storage directory
+      huggingface-cli download IndexTeam/IndexTTS-2 \
+        --local-dir /oomol-driver/oomol-storage/indextts-checkpoints
+
+      echo "Model download completed!"
+    else
+      echo "IndexTTS2 model already exists, skipping download."
+    fi

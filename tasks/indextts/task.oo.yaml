@@ -1,0 +1,209 @@
+inputs_def:
+  - handle: text
+    description: Target text to synthesize into speech
+    json_schema:
+      type: string
+    nullable: false
+
+  - handle: spk_audio_prompt
+    description: Voice timbre reference audio (for speaker cloning)
+    json_schema:
+      type: string
+      ui:widget: file
+      ui:options:
+        filters:
+          - name: Audio Files
+            extensions:
+              - wav
+              - mp3
+              - flac
+              - m4a
+        excludeAll: true
+    nullable: false
+
+  - handle: emo_control_mode
+    description: "Emotion control method: speaker (same as voice), reference (use
+      emo_audio), vector (use emo sliders), text (use emo_text)"
+    json_schema:
+      type: string
+      enum:
+        - speaker
+        - reference
+        - vector
+        - text
+    value: speaker
+    nullable: true
+
+  - handle: emo_audio_prompt
+    description: Emotional reference audio (used when emo_control_mode is 'reference')
+    json_schema:
+      type: string
+      ui:widget: file
+      ui:options:
+        filters:
+          - name: Audio Files
+            extensions:
+              - wav
+              - mp3
+              - flac
+              - m4a
+        excludeAll: true
+    value: null
+    nullable: true
+
+  - handle: emo_weight
+    description: Emotion intensity weight (0.0-1.0, recommended 0.6-0.7 for text mode)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.65
+    nullable: true
+
+  - handle: emo_text
+    description: Emotion description text (used when emo_control_mode is 'text')
+    json_schema:
+      type: string
+    value: null
+    nullable: true
+
+  - handle: emo_vec_happy
+    description: Happy emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: emo_vec_angry
+    description: Angry emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: emo_vec_sad
+    description: Sad emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: emo_vec_afraid
+    description: Afraid emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: emo_vec_disgusted
+    description: Disgusted emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: emo_vec_melancholic
+    description: Melancholic emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: emo_vec_surprised
+    description: Surprised emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: emo_vec_calm
+    description: Calm emotion intensity (0.0-1.0)
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.0
+    nullable: true
+
+  - handle: use_random
+    description: Enable random sampling (reduces voice cloning fidelity but adds variety)
+    json_schema:
+      type: boolean
+    value: false
+    nullable: true
+
+  - handle: max_mel_tokens
+    description: Maximum generation tokens (audio may be truncated if too small)
+    json_schema:
+      type: integer
+      minimum: 50
+      maximum: 1500
+    value: 1500
+    nullable: true
+
+  - handle: temperature
+    description: Sampling temperature (higher = more diverse, lower = more stable)
+    json_schema:
+      type: number
+      minimum: 0.1
+      maximum: 2
+    value: 0.8
+    nullable: true
+
+  - handle: top_p
+    description: Top-p nucleus sampling parameter
+    json_schema:
+      type: number
+      minimum: 0
+      maximum: 1
+    value: 0.8
+    nullable: true
+
+  - handle: top_k
+    description: Top-k sampling parameter (0 to disable)
+    json_schema:
+      type: integer
+      minimum: 0
+      maximum: 100
+    value: 30
+    nullable: true
+
+  - handle: max_text_tokens_per_segment
+    description: Maximum tokens per sentence segment (80-200 recommended)
+    json_schema:
+      type: integer
+      minimum: 20
+      maximum: 200
+    value: 120
+    nullable: true
+
+outputs_def:
+  - handle: audio
+    description: "Generated speech audio file"
+    json_schema:
+      type: string
+
+executor:
+  name: python
+  options:
+    entry: __init__.py
+    spawn: false
+
+title: "IndexTTS2 Speech Synthesis"
+icon: ":carbon:microphone-filled:"
+description: "IndexTTS2: Zero-shot text-to-speech with emotion control and voice
+  cloning. Supports Chinese and English with high emotional expressiveness."

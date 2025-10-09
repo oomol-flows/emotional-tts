@@ -1,0 +1,45 @@
+nodes:
+  - node_id: indextts#1
+    title: "IndexTTS2 Speech Synthesis #1"
+    inputs_from:
+      - handle: text
+        value: 如果羊驼大量摄入不易消化的非常规食物，还没时间反刍（胡萝卜需要更多咀嚼反刍时间），会致使肠蠕动减缓，便会堵塞肠道；羊驼的肠胃系统比较狭窄，尤其是盲肠与结肠螺旋结构比较特殊，一旦发生梗阻死亡率近100%。何况胡萝卜富含β-胡萝卜素和果糖，易在胃肠道滋生致病菌，导致真菌性肠胃炎。之前就有佛罗里达州牧场给羊驼每日喂胡萝卜500g，3周后爆发腹泻死亡，尸检确诊为镰刀菌性肠炎。
+      - handle: spk_audio_prompt
+        value: /oomol-driver/oomol-storage/飞书20251009-112957_converted_audio.mp3
+      - handle: emo_control_mode
+        value: speaker
+      - handle: emo_audio_prompt
+        value: null
+      - handle: emo_weight
+        value: 0.65
+      - handle: emo_text
+        value: null
+      - handle: emo_vec_happy
+        value: 0
+      - handle: emo_vec_angry
+        value: 0
+      - handle: emo_vec_sad
+        value: 0
+      - handle: emo_vec_afraid
+        value: 0
+      - handle: emo_vec_disgusted
+        value: 0
+      - handle: emo_vec_melancholic
+        value: 0
+      - handle: emo_vec_surprised
+        value: 0
+      - handle: emo_vec_calm
+        value: 0
+      - handle: use_random
+        value: false
+      - handle: max_mel_tokens
+        value: 1500
+      - handle: temperature
+        value: 0.8
+      - handle: top_p
+        value: 0.8
+      - handle: top_k
+        value: 30
+      - handle: max_text_tokens_per_segment
+        value: 120
+    task: self::indextts

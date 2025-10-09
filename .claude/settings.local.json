@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip search:*)",
+      "WebSearch",
+      "WebFetch(domain:pypi.org)",
+      "Bash(python:*)",
+      "Bash(poetry lock:*)",
+      "Bash(npm install:*)",
+      "Bash(poetry install:*)",
+      "Bash(pip install:*)",
+      "Bash(apt-cache:*)",
+      "Bash(apt-get:*)",
+      "Bash(apt-get install:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pip show:*)",
+      "Read(//tmp/**)",
+      "Bash(pip uninstall:*)",
+      "Read(//root/.local/share/uv/python/**)",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
