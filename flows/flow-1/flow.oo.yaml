@@ -1,6 +1,6 @@
 nodes:
   - node_id: indextts#1
-    title: "IndexTTS2 Speech Synthesis #1"
+    title: "%indextts2-speech-synthesis-1%"
     inputs_from:
       - handle: text
       - handle: spk_audio_prompt

@@ -1,13 +1,13 @@
 inputs_def:
   - handle: text
-    description: Target text to synthesize into speech
+    description: "%target-text-to-synthesize-into-speech%"
     json_schema:
       type: string
       ui:widget: text
     nullable: false
 
   - handle: spk_audio_prompt
-    description: Voice timbre reference audio (for speaker cloning)
+    description: "%voice-timbre-reference-audio-for-speaker-cloning%"
     json_schema:
       type: string
       ui:widget: file
@@ -23,8 +23,7 @@ inputs_def:
     nullable: false
 
   - handle: emo_control_mode
-    description: "Emotion control method: speaker (same as voice), reference (use
-      emo_audio), vector (use emo sliders), text (use emo_text)"
+    description: "%emotion-control-method-speaker-same-as-voice-reference-use-emo_a%"
     json_schema:
       type: string
       enum:
@@ -36,10 +35,10 @@ inputs_def:
     nullable: true
 
   - group: Optional
-    collapsed: true
+    collapsed: false
 
   - handle: emo_audio_prompt
-    description: Emotional reference audio (used when emo_control_mode is 'reference')
+    description: "%emotional-reference-audio-used-when-emo_control_mode-is-referenc%"
     json_schema:
       type: string
       ui:widget: file
@@ -56,7 +55,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_weight
-    description: Emotion intensity weight (0.0-1.0, recommended 0.6-0.7 for text mode)
+    description: "%emotion-intensity-weight-0-0-1-0-recommended-0-6-0-7-for-text-mo%"
     json_schema:
       type: number
       minimum: 0
@@ -65,14 +64,14 @@ inputs_def:
     nullable: true
 
   - handle: emo_text
-    description: Emotion description text (used when emo_control_mode is 'text')
+    description: "%emotion-description-text-used-when-emo_control_mode-is-text%"
     json_schema:
       type: string
     value:
     nullable: true
 
   - handle: emo_vec_happy
-    description: Happy emotion intensity (0.0-1.0)
+    description: "%happy-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -81,7 +80,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_vec_angry
-    description: Angry emotion intensity (0.0-1.0)
+    description: "%angry-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -90,7 +89,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_vec_sad
-    description: Sad emotion intensity (0.0-1.0)
+    description: "%sad-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -99,7 +98,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_vec_afraid
-    description: Afraid emotion intensity (0.0-1.0)
+    description: "%afraid-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -108,7 +107,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_vec_disgusted
-    description: Disgusted emotion intensity (0.0-1.0)
+    description: "%disgusted-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -117,7 +116,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_vec_melancholic
-    description: Melancholic emotion intensity (0.0-1.0)
+    description: "%melancholic-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -126,7 +125,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_vec_surprised
-    description: Surprised emotion intensity (0.0-1.0)
+    description: "%surprised-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -135,7 +134,7 @@ inputs_def:
     nullable: true
 
   - handle: emo_vec_calm
-    description: Calm emotion intensity (0.0-1.0)
+    description: "%calm-emotion-intensity-0-0-1-0%"
     json_schema:
       type: number
       minimum: 0
@@ -144,14 +143,14 @@ inputs_def:
     nullable: true
 
   - handle: use_random
-    description: Enable random sampling (reduces voice cloning fidelity but adds variety)
+    description: "%enable-random-sampling-reduces-voice-cloning-fidelity-but-adds-v%"
     json_schema:
       type: boolean
     value: false
     nullable: true
 
   - handle: max_mel_tokens
-    description: Maximum generation tokens (audio may be truncated if too small)
+    description: "%maximum-generation-tokens-audio-may-be-truncated-if-too-small%"
     json_schema:
       type: integer
       minimum: 50
@@ -160,7 +159,7 @@ inputs_def:
     nullable: true
 
   - handle: temperature
-    description: Sampling temperature (higher = more diverse, lower = more stable)
+    description: "%sampling-temperature-higher-more-diverse-lower-more-stable%"
     json_schema:
       type: number
       minimum: 0.1
@@ -169,7 +168,7 @@ inputs_def:
     nullable: true
 
   - handle: top_p
-    description: Top-p nucleus sampling parameter
+    description: "%top-p-nucleus-sampling-parameter%"
     json_schema:
       type: number
       minimum: 0
@@ -178,7 +177,7 @@ inputs_def:
     nullable: true
 
   - handle: top_k
-    description: Top-k sampling parameter (0 to disable)
+    description: "%top-k-sampling-parameter-0-to-disable%"
     json_schema:
       type: integer
       minimum: 0
@@ -186,7 +185,7 @@ inputs_def:
     value: 30
     nullable: true
   - handle: max_text_tokens_per_segment
-    description: Maximum tokens per sentence segment (80-200 recommended)
+    description: "%maximum-tokens-per-sentence-segment-80-200-recommended%"
     json_schema:
       type: integer
       minimum: 20
@@ -206,7 +205,6 @@ executor:
     entry: __init__.py
     spawn: false
 
-title: "IndexTTS2 Speech Synthesis"
+title: "%indextts2-speech-synthesis%"
 icon: ":carbon:microphone-filled:"
-description: "IndexTTS2: Zero-shot text-to-speech with emotion control and voice
-  cloning. Supports Chinese and English with high emotional expressiveness."
+description: "%indextts2-zero-shot-text-to-speech-with-emotion-control-and-voic%"

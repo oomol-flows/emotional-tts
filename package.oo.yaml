@@ -1,19 +1,28 @@
 version: 0.0.1
 scripts:
-  # Script executed when the container is first loaded
-  bootstrap: |
+  bootstrap: >
     npm install
+
     poetry install --no-root
+
     apt update && apt install -y openssh-client ffmpeg libavutil58 libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libfst-dev
+
     wget https://static.oomol.com/sshexec/v1.0.12/installer.sh --output-document /tmp/installer.sh
+
     bash +x /tmp/installer.sh
 
+
     # Install text normalization dependency (wetext instead of WeTextProcessing)
+
     echo "Installing wetext for text normalization..."
+
     pip install wetext
 
+
     # Install IndexTTS package from GitHub
+
     echo "Installing IndexTTS package..."
+
     if ! python -c "import indextts" 2>/dev/null; then
       # Clone and patch IndexTTS to use wetext on Linux
       cd /tmp
@@ -32,10 +41,14 @@ scripts:
       echo "IndexTTS package already installed"
     fi
 
+
     # Download IndexTTS2 model checkpoints
+
     mkdir -p /oomol-driver/oomol-storage/indextts-checkpoints
 
+
     # Check if model already downloaded
+
     if [ ! -f "/oomol-driver/oomol-storage/indextts-checkpoints/config.yaml" ]; then
       echo "Downloading IndexTTS2 model from HuggingFace..."
 
@@ -50,3 +63,8 @@ scripts:
     else
       echo "IndexTTS2 model already exists, skipping download."
     fi
+icon: ./icon.png
+name: emotional-tts
+releaseNotes: init
+displayName: "%emotional-tts%"
+description: "%transform-any-text-into-natural-emotionally-expressive-speech-wi%"
