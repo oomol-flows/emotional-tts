@@ -55,7 +55,17 @@ except ImportError as e:
         f"Original error: {e}"
     )
 
-# Import IndexTTS2 from installed package
+# Import IndexTTS2 from installed package (not local directory)
+# The local 'indextts' task folder has the same name as the installed package,
+# so we need to manipulate sys.path to ensure Python imports the installed package
+_original_sys_path = sys.path.copy()
+_tasks_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Remove all paths that could lead to the tasks directory
+_paths_to_remove = [p for p in sys.path if _tasks_dir in p or p == _tasks_dir]
+for p in _paths_to_remove:
+    sys.path.remove(p)
+
 try:
     from indextts.infer_v2 import IndexTTS2
 except ImportError as e:
@@ -63,6 +73,9 @@ except ImportError as e:
         "IndexTTS package not found. Please ensure the bootstrap script has run successfully. "
         f"Original error: {e}"
     )
+finally:
+    # Restore sys.path
+    sys.path = _original_sys_path
 
 # Global model instance (loaded once per task lifecycle)
 _tts_model = None

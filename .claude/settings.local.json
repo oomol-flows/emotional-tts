@@ -18,7 +18,9 @@
       "Bash(pip uninstall:*)",
       "Read(//root/.local/share/uv/python/**)",
       "Bash(find:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(poetry:*)",
+      "Read(//oomol-driver/oomol-storage/indextts-checkpoints/**)"
     ],
     "deny": [],
     "ask": []
