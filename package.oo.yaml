@@ -35,29 +35,6 @@ scripts:
     else
       echo "IndexTTS package already installed"
     fi
-
-
-    # Download IndexTTS2 model checkpoints
-
-    mkdir -p /oomol-driver/oomol-storage/indextts-checkpoints
-
-
-    # Check if model already downloaded
-
-    if [ ! -f "/oomol-driver/oomol-storage/indextts-checkpoints/config.yaml" ]; then
-      echo "Downloading IndexTTS2 model from HuggingFace..."
-
-      # Install huggingface-cli if not available
-      pip install -U "huggingface-hub[cli]"
-
-      # Download model files to storage directory
-      huggingface-cli download IndexTeam/IndexTTS-2 \
-        --local-dir /oomol-driver/oomol-storage/indextts-checkpoints
-
-      echo "Model download completed!"
-    else
-      echo "IndexTTS2 model already exists, skipping download."
-    fi
 icon: ./icon.png
 name: emotional-tts
 displayName: "%emotional-tts%"

@@ -3,9 +3,9 @@ nodes:
     title: "%srt-subtitle-synthesis-1%"
     inputs_from:
       - handle: srt_file
-        value: /path/to/your/subtitles.srt
+        value: /oomol-driver/oomol-storage/test/c3ab1ef6-2e2b-4b72-beb1-5e7820cc5df1.srt
       - handle: spk_audio_prompt
-        value: /path/to/your/voice-sample.mp3
+        value: /oomol-driver/oomol-storage/test/飞书20251009-112957_converted_audio.mp3
       - handle: emo_control_mode
         value: speaker
       - handle: emo_audio_prompt

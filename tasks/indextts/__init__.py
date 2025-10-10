@@ -35,6 +35,10 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
+# Import model downloader utility
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.model_downloader import ensure_model_downloaded
+
 # Set HuggingFace cache directory
 os.environ['HF_HUB_CACHE'] = '/oomol-driver/oomol-storage/indextts-checkpoints/hf_cache'
 
@@ -53,10 +57,14 @@ _tts_model = None
 def get_tts_model(model_dir: str, cfg_path: str):
     """
     Get or initialize the IndexTTS2 model (singleton pattern)
+    Ensures model is downloaded on first execution.
     """
     global _tts_model
 
     if _tts_model is None:
+        # Ensure model is downloaded before initialization
+        ensure_model_downloaded(model_dir=model_dir)
+
         print(">> Initializing IndexTTS2 model...")
         _tts_model = IndexTTS2(
             cfg_path=cfg_path,
@@ -84,14 +92,7 @@ def main(params: Inputs, context: Context) -> Outputs:
     model_dir = "/oomol-driver/oomol-storage/indextts-checkpoints"
     cfg_path = os.path.join(model_dir, "config.yaml")
 
-    # Validate model files exist
-    if not os.path.exists(model_dir):
-        raise ValueError(f"Model directory not found: {model_dir}. Please download the model first.")
-
-    if not os.path.exists(cfg_path):
-        raise ValueError(f"Config file not found: {cfg_path}")
-
-    # Get TTS model
+    # Get TTS model (will download if needed)
     tts = get_tts_model(model_dir, cfg_path)
 
     # Extract parameters with defaults for nullable fields

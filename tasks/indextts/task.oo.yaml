@@ -206,5 +206,5 @@ executor:
     spawn: false
 
 title: "%indextts2-speech-synthesis%"
-icon: ":carbon:microphone-filled:"
+icon: ":carbon:ibm-watson-text-to-speech:"
 description: "%indextts2-zero-shot-text-to-speech-with-emotion-control-and-voic%"
