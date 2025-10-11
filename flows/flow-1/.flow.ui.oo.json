@@ -1,10 +1,42 @@
 {
   "nodes": {
-    "indextts#1": {
+    "+value#1": {
+      "contentWidth": 415,
       "rfNode": {
         "position": {
-          "x": 0,
-          "y": 0
+          "x": -718.9191070316626,
+          "y": 562.524336148342
+        }
+      }
+    },
+    "extract-audio#1": {
+      "rfNode": {
+        "position": {
+          "x": -138.282086479175,
+          "y": 709.9851394104845
+        }
+      }
+    },
+    "whisper-srt-extractor#1": {
+      "rfNode": {
+        "position": {
+          "x": 397.5925826871496,
+          "y": 658.3447684481689
+        }
+      },
+      "sections": {
+        "inputs": {
+          "groupCollapsed": {
+            "more": true
+          }
+        }
+      }
+    },
+    "srt-synthesis#1": {
+      "rfNode": {
+        "position": {
+          "x": 1049.4464456540843,
+          "y": 521.2014881875931
         }
       },
       "sections": {
@@ -12,6 +44,22 @@
           "groupCollapsed": {
             "Optional": true
           }
+        }
+      }
+    },
+    "trim-audio#1": {
+      "rfNode": {
+        "position": {
+          "x": 566.058710908474,
+          "y": 322.2590754639181
+        }
+      }
+    },
+    "replace-audio#1": {
+      "rfNode": {
+        "position": {
+          "x": 1098.547126241204,
+          "y": -24.831942479514645
         }
       }
     }

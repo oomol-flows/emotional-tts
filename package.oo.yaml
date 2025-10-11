@@ -41,3 +41,7 @@ displayName: "%emotional-tts%"
 description: "%transform-any-text-into-natural-emotionally-expressive-speech-wi%"
 repository: https://github.com/oomol-flows/emotional-tts.git
 releaseNotes: update
+dependencies:
+  ffmpeg: 0.3.0
+  whisper: 0.1.0
+  oomol-preview: 0.1.7
