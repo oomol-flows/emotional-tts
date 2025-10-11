@@ -5,7 +5,7 @@ nodes:
       - handle: text
         value: 已经升级上来了，按他的说法。付费版本，如果连续三个月超限，那么会自动再往上升级，只要看账单就行了
       - handle: spk_audio_prompt
-        value: /oomol-driver/oomol-storage/audio/飞书20251009-112957_converted_audio.mp3
+        value: /oomol-driver/oomol-storage/飞书20251009-112957_converted_audio.mp3
       - handle: emo_control_mode
         value: speaker
       - handle: emo_audio_prompt
@@ -42,4 +42,6 @@ nodes:
         value: 30
       - handle: max_text_tokens_per_segment
         value: 120
+      - handle: model_source
+        value: auto
     task: self::indextts

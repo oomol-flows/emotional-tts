@@ -3,7 +3,6 @@ Model downloader utility for IndexTTS2 models.
 Ensures models are downloaded on first execution with thread-safe locking.
 """
 
-import os
 import time
 import fcntl
 import socket
@@ -52,64 +51,37 @@ def _download_from_huggingface(model_repo: str, model_dir: str, max_retries: int
             "Please ensure it's installed: pip install huggingface-hub"
         ) from e
 
-    # Define endpoints
-    endpoints = [
-        ("HuggingFace Official", "https://huggingface.co"),
-        ("HuggingFace Mirror (hf-mirror.com)", "https://hf-mirror.com"),
-    ]
-
-    print(f">> Model not found, downloading from repository: {model_repo}")
+    print(f">> Downloading from HuggingFace: {model_repo}")
     print(f"   Destination: {model_dir}")
-
-    # Ping all endpoints to find the fastest
-    print(">> Testing network latency to endpoints...")
-    latencies = []
-    for endpoint_name, endpoint_url in endpoints:
-        latency = _ping_host(endpoint_url)
-        latencies.append((latency, endpoint_name, endpoint_url))
-        if latency == float('inf'):
-            print(f"   {endpoint_name}: Unreachable")
-        else:
-            print(f"   {endpoint_name}: {latency:.0f}ms")
-
-    # Sort by latency (fastest first)
-    latencies.sort(key=lambda x: x[0])
-    sorted_endpoints = [(name, url) for _, name, url in latencies]
 
     last_error = None
 
-    for endpoint_name, endpoint_url in sorted_endpoints:
-        # Set HuggingFace endpoint
-        os.environ['HF_ENDPOINT'] = endpoint_url
+    for attempt in range(1, max_retries + 1):
+        try:
+            print(f">> Attempt {attempt}/{max_retries}...")
+            start_time = time.time()
 
-        for attempt in range(1, max_retries + 1):
-            try:
-                print(f">> Trying {endpoint_name} (Attempt {attempt}/{max_retries})...")
-                start_time = time.time()
+            snapshot_download(
+                repo_id=model_repo,
+                local_dir=model_dir,
+                local_dir_use_symlinks=False,
+                resume_download=True
+            )
 
-                snapshot_download(
-                    repo_id=model_repo,
-                    local_dir=model_dir,
-                    local_dir_use_symlinks=False,
-                    resume_download=True
-                )
+            elapsed = time.time() - start_time
+            print(f">> Model download completed successfully in {elapsed:.1f}s")
+            return
 
-                elapsed = time.time() - start_time
-                print(f">> Model download completed successfully in {elapsed:.1f}s")
-                return
+        except Exception as e:
+            last_error = e
+            print(f"   Failed: {str(e)[:100]}")
 
-            except Exception as e:
-                last_error = e
-                print(f"   Failed: {str(e)[:100]}")
+            if attempt < max_retries:
+                wait_time = attempt * 2
+                print(f"   Retrying in {wait_time}s...")
+                time.sleep(wait_time)
 
-                if attempt < max_retries:
-                    wait_time = attempt * 2
-                    print(f"   Retrying in {wait_time}s...")
-                    time.sleep(wait_time)
-
-        print(f">> All retries failed for {endpoint_name}, trying next source...")
-
-    raise RuntimeError(f"Failed to download model from all sources. Last error: {last_error}") from last_error
+    raise RuntimeError(f"Failed to download model from HuggingFace: {last_error}") from last_error
 
 
 def _download_from_modelscope(model_repo: str, model_dir: str, max_retries: int = 3) -> None:
@@ -150,7 +122,8 @@ def _download_from_modelscope(model_repo: str, model_dir: str, max_retries: int 
 
 def ensure_model_downloaded(
     model_dir: str = "/oomol-driver/oomol-storage/indextts-checkpoints",
-    model_repo: str = "IndexTeam/IndexTTS-2"
+    model_repo: str = "IndexTeam/IndexTTS-2",
+    model_source: str = "auto"
 ) -> str:
     """
     Ensure IndexTTS2 model is downloaded and ready to use.
@@ -160,6 +133,7 @@ def ensure_model_downloaded(
     Args:
         model_dir: Directory to store the model files
         model_repo: HuggingFace repository ID (also used for ModelScope if available)
+        model_source: Download source - "auto", "huggingface", or "modelscope"
 
     Returns:
         Path to the model directory
@@ -196,26 +170,42 @@ def ensure_model_downloaded(
         except ImportError:
             pass
 
-        # Ping ModelScope to determine download order
+        # Determine download sources based on model_source parameter
         sources = []
 
-        # Always add HuggingFace
-        sources.append(("HuggingFace", _download_from_huggingface))
+        if model_source == "huggingface":
+            # Force HuggingFace only
+            print(">> Using HuggingFace (user selected)")
+            sources.append(("HuggingFace", _download_from_huggingface))
 
-        # Add ModelScope if available
-        if modelscope_available:
-            ms_latency = _ping_host("https://modelscope.cn")
-            hf_latency = _ping_host("https://huggingface.co")
+        elif model_source == "modelscope":
+            # Force ModelScope only
+            if not modelscope_available:
+                raise RuntimeError("ModelScope not available. Install with: pip install modelscope")
+            print(">> Using ModelScope (user selected)")
+            sources.append(("ModelScope", _download_from_modelscope))
 
-            print(f">> Source latency comparison:")
-            print(f"   HuggingFace: {hf_latency:.0f}ms" if hf_latency != float('inf') else "   HuggingFace: Unreachable")
-            print(f"   ModelScope: {ms_latency:.0f}ms" if ms_latency != float('inf') else "   ModelScope: Unreachable")
+        else:
+            # Auto mode: ping and compare latency
+            print(">> Auto-selecting download source...")
 
-            # If ModelScope is faster, put it first
-            if ms_latency < hf_latency:
-                sources.insert(0, ("ModelScope", _download_from_modelscope))
-            else:
-                sources.append(("ModelScope", _download_from_modelscope))
+            # Always add HuggingFace
+            sources.append(("HuggingFace", _download_from_huggingface))
+
+            # Add ModelScope if available
+            if modelscope_available:
+                ms_latency = _ping_host("https://modelscope.cn")
+                hf_latency = _ping_host("https://huggingface.co")
+
+                print(f">> Source latency comparison:")
+                print(f"   HuggingFace: {hf_latency:.0f}ms" if hf_latency != float('inf') else "   HuggingFace: Unreachable")
+                print(f"   ModelScope: {ms_latency:.0f}ms" if ms_latency != float('inf') else "   ModelScope: Unreachable")
+
+                # If ModelScope is faster, put it first
+                if ms_latency < hf_latency:
+                    sources.insert(0, ("ModelScope", _download_from_modelscope))
+                else:
+                    sources.append(("ModelScope", _download_from_modelscope))
 
         # Try each source in order
         for source_name, download_func in sources:

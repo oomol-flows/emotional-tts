@@ -40,6 +40,17 @@ inputs_def:
     value: speaker
     nullable: true
 
+  - handle: model_source
+    description: "%model-download-source-auto-intelligent-selection-huggingface-force%"
+    json_schema:
+      type: string
+      enum:
+        - auto
+        - huggingface
+        - modelscope
+    value: auto
+    nullable: true
+
   - group: Optional
     collapsed: true
 

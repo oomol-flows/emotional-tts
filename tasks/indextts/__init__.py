@@ -4,6 +4,7 @@ class Inputs(typing.TypedDict):
     text: str
     spk_audio_prompt: str
     emo_control_mode: typing.Literal["speaker", "reference", "vector", "text"] | None
+    model_source: typing.Literal["auto", "huggingface", "modelscope"] | None
     emo_audio_prompt: str | None
     emo_weight: float | None
     emo_text: str | None
@@ -67,7 +68,7 @@ finally:
 # Global model instance (loaded once per task lifecycle)
 _tts_model = None
 
-def get_tts_model(model_dir: str, cfg_path: str):
+def get_tts_model(model_dir: str, cfg_path: str, model_source: str = "auto"):
     """
     Get or initialize the IndexTTS2 model (singleton pattern)
     Ensures model is downloaded on first execution.
@@ -76,7 +77,7 @@ def get_tts_model(model_dir: str, cfg_path: str):
 
     if _tts_model is None:
         # Ensure model is downloaded before initialization
-        ensure_model_downloaded(model_dir=model_dir)
+        ensure_model_downloaded(model_dir=model_dir, model_source=model_source)
 
         print(">> Initializing IndexTTS2 model...")
         _tts_model = IndexTTS2(
@@ -105,8 +106,11 @@ def main(params: Inputs, context: Context) -> Outputs:
     model_dir = "/oomol-driver/oomol-storage/indextts-checkpoints"
     cfg_path = os.path.join(model_dir, "config.yaml")
 
+    # Get model source preference
+    model_source = params.get("model_source") or "auto"
+
     # Get TTS model (will download if needed)
-    tts = get_tts_model(model_dir, cfg_path)
+    tts = get_tts_model(model_dir, cfg_path, model_source)
 
     # Extract parameters with defaults for nullable fields
     text = params["text"]
