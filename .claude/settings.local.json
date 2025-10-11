@@ -20,7 +20,10 @@
       "Bash(find:*)",
       "Bash(mkdir:*)",
       "Bash(poetry:*)",
-      "Read(//oomol-driver/oomol-storage/indextts-checkpoints/**)"
+      "Read(//oomol-driver/oomol-storage/indextts-checkpoints/**)",
+      "Read(//root/.oomol-studio/ovm-krun/default/data/**)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

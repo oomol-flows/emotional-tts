@@ -4,7 +4,6 @@ class Inputs(typing.TypedDict):
     text: str
     spk_audio_prompt: str
     emo_control_mode: typing.Literal["speaker", "reference", "vector", "text"] | None
-    model_source: typing.Literal["auto", "huggingface", "modelscope"] | None
     emo_audio_prompt: str | None
     emo_weight: float | None
     emo_text: str | None
@@ -40,8 +39,15 @@ warnings.filterwarnings("ignore", category=UserWarning)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.model_downloader import ensure_model_downloaded
 
-# Set HuggingFace cache directory
-os.environ['HF_HUB_CACHE'] = '/oomol-driver/oomol-storage/indextts-checkpoints/hf_cache'
+# Set HuggingFace cache directories to use larger filesystem
+hf_cache_dir = '/oomol-driver/oomol-storage/indextts-checkpoints/hf_cache'
+os.makedirs(hf_cache_dir, exist_ok=True)
+os.environ['HF_HUB_CACHE'] = hf_cache_dir
+os.environ['HF_HOME'] = hf_cache_dir
+os.environ['TRANSFORMERS_CACHE'] = hf_cache_dir
+os.environ['HF_DATASETS_CACHE'] = hf_cache_dir
+# Disable XET download acceleration to avoid temp file issues
+os.environ['HF_HUB_ENABLE_HF_TRANSFER'] = '0'
 
 # Import IndexTTS2 from installed package (not local directory)
 # The local 'indextts' task folder has the same name as the installed package,
@@ -68,7 +74,7 @@ finally:
 # Global model instance (loaded once per task lifecycle)
 _tts_model = None
 
-def get_tts_model(model_dir: str, cfg_path: str, model_source: str = "auto"):
+def get_tts_model(model_dir: str, cfg_path: str):
     """
     Get or initialize the IndexTTS2 model (singleton pattern)
     Ensures model is downloaded on first execution.
@@ -77,7 +83,7 @@ def get_tts_model(model_dir: str, cfg_path: str, model_source: str = "auto"):
 
     if _tts_model is None:
         # Ensure model is downloaded before initialization
-        ensure_model_downloaded(model_dir=model_dir, model_source=model_source)
+        ensure_model_downloaded(model_dir=model_dir)
 
         print(">> Initializing IndexTTS2 model...")
         _tts_model = IndexTTS2(
@@ -106,11 +112,8 @@ def main(params: Inputs, context: Context) -> Outputs:
     model_dir = "/oomol-driver/oomol-storage/indextts-checkpoints"
     cfg_path = os.path.join(model_dir, "config.yaml")
 
-    # Get model source preference
-    model_source = params.get("model_source") or "auto"
-
     # Get TTS model (will download if needed)
-    tts = get_tts_model(model_dir, cfg_path, model_source)
+    tts = get_tts_model(model_dir, cfg_path)
 
     # Extract parameters with defaults for nullable fields
     text = params["text"]

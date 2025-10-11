@@ -5,10 +5,8 @@ Ensures models are downloaded on first execution with thread-safe locking.
 
 import time
 import fcntl
-import socket
 from pathlib import Path
 from contextlib import contextmanager
-from urllib.parse import urlparse
 
 
 @contextmanager
@@ -25,20 +23,6 @@ def _file_lock(lock_path: Path):
         lock_path.unlink(missing_ok=True)
 
 
-def _ping_host(url: str, timeout: float = 2.0) -> float:
-    """Ping a host and return latency in milliseconds. Returns float('inf') on failure."""
-    try:
-        parsed = urlparse(url)
-        host = parsed.netloc or parsed.path
-
-        start = time.time()
-        sock = socket.create_connection((host, 443), timeout=timeout)
-        sock.close()
-        latency = (time.time() - start) * 1000
-
-        return latency
-    except Exception:
-        return float('inf')
 
 
 def _download_from_huggingface(model_repo: str, model_dir: str, max_retries: int = 3) -> None:
@@ -84,46 +68,12 @@ def _download_from_huggingface(model_repo: str, model_dir: str, max_retries: int
     raise RuntimeError(f"Failed to download model from HuggingFace: {last_error}") from last_error
 
 
-def _download_from_modelscope(model_repo: str, model_dir: str, max_retries: int = 3) -> None:
-    """Download model from ModelScope (魔搭)"""
-    try:
-        from modelscope import snapshot_download
-    except ImportError:
-        print(">> ModelScope SDK not installed, skipping...")
-        raise RuntimeError("ModelScope SDK not available. Install with: pip install modelscope")
-
-    print(f">> Trying ModelScope (魔搭)...")
-
-    for attempt in range(1, max_retries + 1):
-        try:
-            print(f"   Attempt {attempt}/{max_retries}...")
-            start_time = time.time()
-
-            # ModelScope snapshot_download returns the cache directory
-            downloaded_dir = snapshot_download(
-                model_id=model_repo,
-                cache_dir=model_dir
-            )
-
-            elapsed = time.time() - start_time
-            print(f">> Model download completed from ModelScope in {elapsed:.1f}s")
-            print(f"   Downloaded to: {downloaded_dir}")
-            return
-
-        except Exception as e:
-            print(f"   Failed: {str(e)[:100]}")
-            if attempt < max_retries:
-                wait_time = attempt * 2
-                print(f"   Retrying in {wait_time}s...")
-                time.sleep(wait_time)
-
-    raise RuntimeError("Failed to download from ModelScope after all retries")
 
 
 def ensure_model_downloaded(
     model_dir: str = "/oomol-driver/oomol-storage/indextts-checkpoints",
     model_repo: str = "IndexTeam/IndexTTS-2",
-    model_source: str = "auto"
+    model_source: str = "huggingface"
 ) -> str:
     """
     Ensure IndexTTS2 model is downloaded and ready to use.
@@ -132,8 +82,8 @@ def ensure_model_downloaded(
 
     Args:
         model_dir: Directory to store the model files
-        model_repo: HuggingFace repository ID (also used for ModelScope if available)
-        model_source: Download source - "auto", "huggingface", or "modelscope"
+        model_repo: HuggingFace repository ID
+        model_source: Download source - only "huggingface" is supported
 
     Returns:
         Path to the model directory
@@ -159,70 +109,18 @@ def ensure_model_downloaded(
             print(">> Model already downloaded by another process")
             return model_dir
 
-        # Try download from multiple sources
-        download_errors = []
+        # Download from HuggingFace
+        print(">> Downloading from HuggingFace...")
 
-        # Test ModelScope availability
-        modelscope_available = False
         try:
-            import modelscope  # noqa: F401
-            modelscope_available = True
-        except ImportError:
-            pass
-
-        # Determine download sources based on model_source parameter
-        sources = []
-
-        if model_source == "huggingface":
-            # Force HuggingFace only
-            print(">> Using HuggingFace (user selected)")
-            sources.append(("HuggingFace", _download_from_huggingface))
-
-        elif model_source == "modelscope":
-            # Force ModelScope only
-            if not modelscope_available:
-                raise RuntimeError("ModelScope not available. Install with: pip install modelscope")
-            print(">> Using ModelScope (user selected)")
-            sources.append(("ModelScope", _download_from_modelscope))
-
-        else:
-            # Auto mode: ping and compare latency
-            print(">> Auto-selecting download source...")
-
-            # Always add HuggingFace
-            sources.append(("HuggingFace", _download_from_huggingface))
-
-            # Add ModelScope if available
-            if modelscope_available:
-                ms_latency = _ping_host("https://modelscope.cn")
-                hf_latency = _ping_host("https://huggingface.co")
-
-                print(f">> Source latency comparison:")
-                print(f"   HuggingFace: {hf_latency:.0f}ms" if hf_latency != float('inf') else "   HuggingFace: Unreachable")
-                print(f"   ModelScope: {ms_latency:.0f}ms" if ms_latency != float('inf') else "   ModelScope: Unreachable")
-
-                # If ModelScope is faster, put it first
-                if ms_latency < hf_latency:
-                    sources.insert(0, ("ModelScope", _download_from_modelscope))
-                else:
-                    sources.append(("ModelScope", _download_from_modelscope))
-
-        # Try each source in order
-        for source_name, download_func in sources:
-            try:
-                print(f">> Attempting download from {source_name}...")
-                download_func(model_repo, model_dir)
-                break  # Success, exit loop
-            except Exception as e:
-                download_errors.append(f"{source_name}: {e}")
-                print(f">> {source_name} download failed")
+            _download_from_huggingface(model_repo, model_dir)
+        except Exception as e:
+            raise RuntimeError(f"Failed to download model from HuggingFace: {e}") from e
 
         # Verify config file exists
         if not config_path.exists():
-            error_msg = "\n".join(download_errors)
             raise RuntimeError(
-                f"Model download failed from all sources.\n{error_msg}\n"
-                f"Config file not found at {config_path}"
+                f"Model download completed but config file not found at {config_path}"
             )
 
         print(f">> Model verified successfully at {model_dir}")
