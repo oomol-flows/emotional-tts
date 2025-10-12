@@ -1,10 +1,37 @@
 {
   "nodes": {
-    "indextts#1": {
+    "extract-audio#1": {
+      "contentWidth": 350,
       "rfNode": {
         "position": {
           "x": 0,
+          "y": 51.5
+        }
+      }
+    },
+    "audio-to-srt#1": {
+      "contentWidth": 350,
+      "rfNode": {
+        "position": {
+          "x": 416,
+          "y": 51.5
+        }
+      }
+    },
+    "srt-translation#1": {
+      "contentWidth": 350,
+      "rfNode": {
+        "position": {
+          "x": 932,
           "y": 0
+        }
+      }
+    },
+    "srt-synthesis#1": {
+      "rfNode": {
+        "position": {
+          "x": 1448,
+          "y": 226
         }
       },
       "sections": {
@@ -12,6 +39,32 @@
           "groupCollapsed": {
             "Optional": true
           }
+        }
+      }
+    },
+    "trim-audio#1": {
+      "contentWidth": 350,
+      "rfNode": {
+        "position": {
+          "x": 982,
+          "y": 441
+        }
+      }
+    },
+    "replace-audio#1": {
+      "rfNode": {
+        "position": {
+          "x": 1934,
+          "y": 124.25
+        }
+      }
+    },
+    "video_preview#1": {
+      "contentWidth": 450,
+      "rfNode": {
+        "position": {
+          "x": 2420,
+          "y": 212.25
         }
       }
     }

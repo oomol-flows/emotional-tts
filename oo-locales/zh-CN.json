@@ -1,7 +1,6 @@
 {
   "emotional-tts": "情感语音合成",
   "transform-any-text-into-natural-emotionally-expressive-speech-wi": "使用AI驱动的语音克隆技术，将任何文本转换为自然且富有情感表达的语音。",
-  "indextts2-speech-synthesis-1": "IndexTTS2 语音合成 #1",
   "indextts2-speech-synthesis": "IndexTTS2 语音合成",
   "indextts2-zero-shot-text-to-speech-with-emotion-control-and-voic": "IndexTTS2：零样本文本转语音，支持情感控制和声音克隆。支持中文和英文，具备高度情感表现力。",
   "target-text-to-synthesize-into-speech": "要合成语音的目标文本",

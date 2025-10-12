@@ -1,11 +1,57 @@
 nodes:
-  - node_id: indextts#1
-    title: "%indextts2-speech-synthesis-1%"
+  - node_id: extract-audio#1
+    title: "Extract Audio from Video #1"
     inputs_from:
-      - handle: text
-        value: 已经升级上来了，按他的说法。付费版本，如果连续三个月超限，那么会自动再往上升级，只要看账单就行了
+      - handle: video_file
+        value: /oomol-driver/oomol-storage/video/Area22211.MP4
+      - handle: output_format
+        value: mp3
+      - handle: audio_quality
+        value: 192
+    task: ffmpeg::extract-audio
+  - node_id: audio-to-srt#1
+    title: "Audio to SRT #1"
+    inputs_from:
+      - handle: audio_file
+        from_node:
+          - node_id: extract-audio#1
+            output_handle: audio_file
+      - handle: model_size
+        value: medium
+      - handle: language
+        value: auto
+    task: srt-lab::audio-to-srt
+  - node_id: srt-translation#1
+    title: "SRT Translation #1"
+    inputs_from:
+      - handle: srt_file
+        from_node:
+          - node_id: audio-to-srt#1
+            output_handle: srt_file
+      - handle: source_language
+        value: auto
+      - handle: target_language
+        value: en
+      - handle: translation_style
+        value: null
+      - handle: llm
+        value:
+          model: oomol-chat
+          temperature: 0
+          top_p: 0.5
+          max_tokens: 4096
+    task: srt-lab::srt-translation
+  - node_id: srt-synthesis#1
+    title: "SRT 字幕合成 #1"
+    inputs_from:
+      - handle: srt_file
+        from_node:
+          - node_id: srt-translation#1
+            output_handle: srt_file
       - handle: spk_audio_prompt
-        value: /oomol-driver/oomol-storage/飞书20251009-112957_converted_audio.mp3
+        from_node:
+          - node_id: trim-audio#1
+            output_handle: trimmed_audio
       - handle: emo_control_mode
         value: speaker
       - handle: emo_audio_prompt
@@ -42,4 +88,44 @@ nodes:
         value: 30
       - handle: max_text_tokens_per_segment
         value: 120
-    task: self::indextts
+      - handle: speed_factor
+        value: 1
+    task: self::srt-synthesis
+  - node_id: trim-audio#1
+    title: "Trim Audio Segment #1"
+    inputs_from:
+      - handle: audio_file
+        from_node:
+          - node_id: extract-audio#1
+            output_handle: audio_file
+      - handle: start_time
+        value: 0
+      - handle: duration
+        value: 25
+      - handle: output_format
+        value: mp3
+    task: ffmpeg::trim-audio
+  - node_id: replace-audio#1
+    title: "Replace Audio #1"
+    inputs_from:
+      - handle: video_file
+        from_node:
+          - node_id: extract-audio#1
+            output_handle: audio_file
+      - handle: audio_file
+        from_node:
+          - node_id: srt-synthesis#1
+            output_handle: audio
+      - handle: sync_method
+        value: stretch_audio
+      - handle: audio_volume
+        value: 1
+    task: ffmpeg::replace-audio
+  - node_id: video_preview#1
+    title: "Video preview #1"
+    inputs_from:
+      - handle: video_path
+        from_node:
+          - node_id: replace-audio#1
+            output_handle: output_video
+    task: oomol-preview::video_preview
