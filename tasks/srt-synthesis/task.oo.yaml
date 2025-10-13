@@ -170,7 +170,7 @@ inputs_def:
       type: number
       minimum: 0.1
       maximum: 2
-    value: 0.8
+    value: 0.3
     nullable: true
 
   - handle: top_p

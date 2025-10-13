@@ -222,8 +222,8 @@ def main(params: Inputs, context: Context) -> Outputs:
     emo_text = params.get("emo_text")
     use_random = params.get("use_random") if params.get("use_random") is not None else False
     max_mel_tokens = params.get("max_mel_tokens") if params.get("max_mel_tokens") is not None else 1500
-    temperature = params.get("temperature") if params.get("temperature") is not None else 0.8
-    top_p = params.get("top_p") if params.get("top_p") is not None else 0.8
+    temperature = params.get("temperature") if params.get("temperature") is not None else 0.3
+    top_p = params.get("top_p") if params.get("top_p") is not None else 0.9
     top_k = params.get("top_k") if params.get("top_k") is not None else 30
     max_text_tokens_per_segment = params.get("max_text_tokens_per_segment") if params.get("max_text_tokens_per_segment") is not None else 120
     speed_factor = params.get("speed_factor") if params.get("speed_factor") is not None else 1.0
