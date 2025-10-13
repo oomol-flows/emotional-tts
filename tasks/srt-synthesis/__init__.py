@@ -136,14 +136,26 @@ def synthesize_subtitle_entry(
     top_p: float,
     top_k: int,
     max_text_tokens_per_segment: int,
-    temp_dir: str
+    temp_dir: str,
+    target_duration_sec: float | None = None
 ) -> str:
     """
     Synthesize audio for a single subtitle entry
     Returns the path to the generated audio file
+
+    Args:
+        target_duration_sec: Expected duration in seconds for speed estimation
     """
     # Generate unique output path
     output_path = os.path.join(temp_dir, f"segment_{int(time.time() * 1000000)}.wav")
+
+    # Estimate target speed if duration is provided
+    if target_duration_sec and target_duration_sec > 0:
+        text_length = len(text)
+        # Adjust max_mel_tokens based on target duration
+        # Rough estimate: ~100 characters per second for normal speech
+        estimated_mel_tokens = int(target_duration_sec * 100)
+        max_mel_tokens = min(max(estimated_mel_tokens, 100), max_mel_tokens)
 
     # Prepare inference parameters based on emotion control mode
     use_emo_text = False
@@ -300,7 +312,8 @@ def main(params: Inputs, context: Context) -> Outputs:
                 top_p=top_p,
                 top_k=top_k,
                 max_text_tokens_per_segment=max_text_tokens_per_segment,
-                temp_dir=temp_dir
+                temp_dir=temp_dir,
+                target_duration_sec=duration_sec
             )
 
             # Load audio segment
@@ -342,6 +355,10 @@ def main(params: Inputs, context: Context) -> Outputs:
         # Create silent base track
         final_audio = AudioSegment.silent(duration=int(final_end_ms))
 
+        # Define speed bounds for natural sounding speech
+        MIN_SPEED_RATIO = 0.75  # Don't slow down more than 25%
+        MAX_SPEED_RATIO = 1.35  # Don't speed up more than 35%
+
         # Process each audio segment based on sync mode
         for segment in audio_segments:
             start_ms = int(segment['start_ms'])
@@ -351,22 +368,45 @@ def main(params: Inputs, context: Context) -> Outputs:
             audio_duration_ms = len(audio)
 
             if time_sync_mode == "stretch":
-                # Stretch or compress audio to match target duration
+                # Stretch or compress audio to match target duration with bounds
                 if audio_duration_ms != target_duration_ms:
                     speed_ratio = audio_duration_ms / target_duration_ms
+
+                    # Apply speed bounds to prevent unnatural distortion
+                    if speed_ratio < MIN_SPEED_RATIO:
+                        print(f"   Warning: Segment {segment['index']} requires extreme speedup (ratio={speed_ratio:.2f}), clamping to {MIN_SPEED_RATIO}")
+                        speed_ratio = MIN_SPEED_RATIO
+                    elif speed_ratio > MAX_SPEED_RATIO:
+                        print(f"   Warning: Segment {segment['index']} requires extreme slowdown (ratio={speed_ratio:.2f}), clamping to {MAX_SPEED_RATIO}")
+                        speed_ratio = MAX_SPEED_RATIO
+
+                    # Apply speed adjustment using frame rate modification
                     audio = audio._spawn(audio.raw_data, overrides={
                         "frame_rate": int(audio.frame_rate * speed_ratio)
                     }).set_frame_rate(audio.frame_rate)
-                    print(f"   Segment {segment['index']}: stretched {audio_duration_ms}ms -> {target_duration_ms}ms")
+
+                    actual_duration_ms = len(audio)
+                    print(f"   Segment {segment['index']}: adjusted {audio_duration_ms}ms -> {actual_duration_ms}ms (target: {target_duration_ms}ms, ratio: {speed_ratio:.2f})")
 
                 # Insert audio at exact position (non-overlapping)
-                final_audio = final_audio[:start_ms] + audio + final_audio[end_ms:]
+                # If audio is still longer/shorter due to clamping, adjust placement
+                audio_len = len(audio)
+                if audio_len <= target_duration_ms:
+                    final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + audio_len:]
+                else:
+                    # If still too long after clamping, crop the end
+                    audio = audio[:target_duration_ms]
+                    final_audio = final_audio[:start_ms] + audio + final_audio[end_ms:]
 
             elif time_sync_mode == "crop":
-                # Crop audio if it exceeds target duration
+                # Crop audio if it exceeds target duration, with gentle fade
                 if audio_duration_ms > target_duration_ms:
-                    audio = audio[:target_duration_ms]
-                    print(f"   Segment {segment['index']}: cropped {audio_duration_ms}ms -> {target_duration_ms}ms")
+                    # Add 50ms fade out to avoid abrupt cuts
+                    fade_duration = min(50, target_duration_ms // 4)
+                    audio = audio[:target_duration_ms].fade_out(duration=fade_duration)
+                    print(f"   Segment {segment['index']}: cropped {audio_duration_ms}ms -> {target_duration_ms}ms (with fade)")
+                else:
+                    print(f"   Segment {segment['index']}: kept at {audio_duration_ms}ms")
 
                 # Insert audio at exact position
                 final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + len(audio):]

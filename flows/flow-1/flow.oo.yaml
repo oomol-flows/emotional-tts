@@ -81,9 +81,9 @@ nodes:
       - handle: max_mel_tokens
         value: 1500
       - handle: temperature
-        value: 0.8
+        value: 0.3
       - handle: top_p
-        value: 0.8
+        value: 0.9
       - handle: top_k
         value: 30
       - handle: max_text_tokens_per_segment

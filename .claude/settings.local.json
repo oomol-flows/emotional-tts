@@ -23,7 +23,8 @@
       "Read(//oomol-driver/oomol-storage/indextts-checkpoints/**)",
       "Read(//root/.oomol-studio/ovm-krun/default/data/**)",
       "Bash(npm cache clean:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Read(//oomol-driver/oomol-storage/**)"
     ],
     "deny": [],
     "ask": []
