@@ -251,8 +251,12 @@ def smart_trim_audio(audio_segment: AudioSegment, target_duration_ms: int, segme
             fade_duration_ms = min(50, edge_trim_ms // 2)
 
             # Trim and add fades
-            trimmed_audio = trimmed_audio[edge_trim_ms:-edge_trim_ms]
-            trimmed_audio = trimmed_audio.fade_in(duration=fade_duration_ms).fade_out(duration=fade_duration_ms)
+            if edge_trim_ms > 0:
+                trimmed_audio = trimmed_audio[edge_trim_ms:-edge_trim_ms]
+
+            # Apply fade only if duration is valid and audio is long enough
+            if fade_duration_ms > 0 and len(trimmed_audio) > fade_duration_ms * 2:
+                trimmed_audio = trimmed_audio.fade_in(duration=fade_duration_ms).fade_out(duration=fade_duration_ms)
 
             print(f"   Segment {segment_index}: removed all silence ({total_silence_ms}ms), then trimmed {edge_trim_ms}ms from each edge with fade")
         else:
