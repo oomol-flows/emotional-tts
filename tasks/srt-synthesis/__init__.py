@@ -33,6 +33,7 @@ import sys
 import time
 import tempfile
 from oocana import Context
+import numpy as np
 
 # Suppress warnings before importing
 import warnings
@@ -120,6 +121,142 @@ def parse_srt_timestamp(timestamp_str: str) -> float:
     )
 
     return total_seconds
+
+def detect_silence_boundaries(audio_segment: AudioSegment, silence_thresh_db: float = -40.0, min_silence_len_ms: int = 100) -> tuple:
+    """
+    Detect leading and trailing silence in an audio segment
+    Returns (leading_silence_ms, trailing_silence_ms)
+    """
+    # Convert audio to numpy array
+    samples = np.array(audio_segment.get_array_of_samples())
+
+    # Convert to float and normalize
+    if audio_segment.sample_width == 2:  # 16-bit
+        samples = samples.astype(np.float32) / 32768.0
+    elif audio_segment.sample_width == 4:  # 32-bit
+        samples = samples.astype(np.float32) / 2147483648.0
+    else:
+        samples = samples.astype(np.float32)
+
+    # Handle stereo audio
+    if audio_segment.channels == 2:
+        samples = samples.reshape((-1, 2))
+        samples = np.mean(samples, axis=1)
+
+    # Calculate RMS energy in small windows
+    window_size = int(audio_segment.frame_rate * 0.01)  # 10ms windows
+    num_windows = len(samples) // window_size
+
+    if num_windows == 0:
+        return 0, 0
+
+    # Calculate RMS for each window
+    rms_values = []
+    for i in range(num_windows):
+        window = samples[i * window_size:(i + 1) * window_size]
+        rms = np.sqrt(np.mean(window ** 2))
+        rms_db = 20 * np.log10(rms + 1e-10)
+        rms_values.append(rms_db)
+
+    # Find leading silence
+    leading_silent_windows = 0
+    for rms_db in rms_values:
+        if rms_db < silence_thresh_db:
+            leading_silent_windows += 1
+        else:
+            break
+
+    # Find trailing silence
+    trailing_silent_windows = 0
+    for rms_db in reversed(rms_values):
+        if rms_db < silence_thresh_db:
+            trailing_silent_windows += 1
+        else:
+            break
+
+    # Convert windows to milliseconds
+    ms_per_window = (window_size / audio_segment.frame_rate) * 1000
+    leading_silence_ms = int(leading_silent_windows * ms_per_window)
+    trailing_silence_ms = int(trailing_silent_windows * ms_per_window)
+
+    return leading_silence_ms, trailing_silence_ms
+
+def smart_trim_audio(audio_segment: AudioSegment, target_duration_ms: int, segment_index: int) -> AudioSegment:
+    """
+    Intelligently trim audio to match target duration by prioritizing silence removal
+
+    Args:
+        audio_segment: The audio to trim
+        target_duration_ms: Target duration in milliseconds
+        segment_index: Segment index for logging
+
+    Returns:
+        Trimmed audio segment
+    """
+    audio_duration_ms = len(audio_segment)
+
+    if audio_duration_ms <= target_duration_ms:
+        # No trimming needed
+        return audio_segment
+
+    # Calculate how much we need to trim
+    excess_ms = audio_duration_ms - target_duration_ms
+
+    # Detect silence at beginning and end
+    leading_silence_ms, trailing_silence_ms = detect_silence_boundaries(audio_segment)
+    total_silence_ms = leading_silence_ms + trailing_silence_ms
+
+    print(f"   Segment {segment_index}: detected {leading_silence_ms}ms leading silence, {trailing_silence_ms}ms trailing silence")
+
+    # Strategy: Remove silence first, then trim from edges if needed
+    if total_silence_ms >= excess_ms:
+        # We have enough silence to remove
+        # Distribute trimming proportionally between leading and trailing silence
+        if total_silence_ms > 0:
+            leading_trim_ratio = leading_silence_ms / total_silence_ms
+            trailing_trim_ratio = trailing_silence_ms / total_silence_ms
+
+            leading_trim_ms = int(excess_ms * leading_trim_ratio)
+            trailing_trim_ms = int(excess_ms * trailing_trim_ratio)
+        else:
+            leading_trim_ms = 0
+            trailing_trim_ms = 0
+
+        # Ensure we don't trim more silence than exists
+        leading_trim_ms = min(leading_trim_ms, leading_silence_ms)
+        trailing_trim_ms = min(trailing_trim_ms, trailing_silence_ms)
+
+        # Apply trimming
+        start_ms = leading_trim_ms
+        end_ms = audio_duration_ms - trailing_trim_ms
+        trimmed_audio = audio_segment[start_ms:end_ms]
+
+        print(f"   Segment {segment_index}: trimmed {leading_trim_ms}ms from start, {trailing_trim_ms}ms from end (silence only)")
+
+    else:
+        # Not enough silence, remove all silence first then trim edges
+        # Remove all leading and trailing silence
+        start_ms = leading_silence_ms
+        end_ms = audio_duration_ms - trailing_silence_ms
+        trimmed_audio = audio_segment[start_ms:end_ms]
+
+        # Calculate remaining excess
+        remaining_excess_ms = excess_ms - total_silence_ms
+
+        if remaining_excess_ms > 0:
+            # Trim equally from both ends with fade to avoid clicks
+            edge_trim_ms = remaining_excess_ms // 2
+            fade_duration_ms = min(50, edge_trim_ms // 2)
+
+            # Trim and add fades
+            trimmed_audio = trimmed_audio[edge_trim_ms:-edge_trim_ms]
+            trimmed_audio = trimmed_audio.fade_in(duration=fade_duration_ms).fade_out(duration=fade_duration_ms)
+
+            print(f"   Segment {segment_index}: removed all silence ({total_silence_ms}ms), then trimmed {edge_trim_ms}ms from each edge with fade")
+        else:
+            print(f"   Segment {segment_index}: removed {leading_silence_ms}ms leading + {trailing_silence_ms}ms trailing silence")
+
+    return trimmed_audio
 
 def synthesize_subtitle_entry(
     tts,
@@ -359,14 +496,8 @@ def main(params: Inputs, context: Context) -> Outputs:
             audio_duration_ms = len(audio)
 
             if time_sync_mode == "crop":
-                # Crop audio if it exceeds target duration, with gentle fade
-                if audio_duration_ms > target_duration_ms:
-                    # Add 50ms fade out to avoid abrupt cuts
-                    fade_duration = min(50, target_duration_ms // 4)
-                    audio = audio[:target_duration_ms].fade_out(duration=fade_duration)
-                    print(f"   Segment {segment['index']}: cropped {audio_duration_ms}ms -> {target_duration_ms}ms (with fade)")
-                else:
-                    print(f"   Segment {segment['index']}: kept at {audio_duration_ms}ms")
+                # Smart crop: prioritize removing silence at edges
+                audio = smart_trim_audio(audio, target_duration_ms, segment['index'])
 
                 # Insert audio at exact position
                 final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + len(audio):]
@@ -377,14 +508,8 @@ def main(params: Inputs, context: Context) -> Outputs:
 
             elif time_sync_mode == "stretch":
                 # Legacy stretch mode removed to prevent voice distortion
-                # Fallback to crop behavior
-                if audio_duration_ms > target_duration_ms:
-                    fade_duration = min(50, target_duration_ms // 4)
-                    audio = audio[:target_duration_ms].fade_out(duration=fade_duration)
-                    print(f"   Segment {segment['index']}: cropped {audio_duration_ms}ms -> {target_duration_ms}ms")
-                else:
-                    print(f"   Segment {segment['index']}: kept at {audio_duration_ms}ms")
-
+                # Fallback to smart crop behavior
+                audio = smart_trim_audio(audio, target_duration_ms, segment['index'])
                 final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + len(audio):]
 
             else:
