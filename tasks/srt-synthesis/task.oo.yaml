@@ -219,6 +219,11 @@ inputs_def:
         - stretch
     value: crop
     nullable: true
+  - handle: auto_adjust_reference_speed
+    json_schema:
+      type: boolean
+    value: true
+    nullable: true
 
 outputs_def:
   - handle: audio

@@ -35,7 +35,7 @@ inputs_def:
     nullable: true
 
   - group: Optional
-    collapsed: true
+    collapsed: false
 
   - handle: emo_audio_prompt
     description: "%emotional-reference-audio-used-when-emo_control_mode-is-referenc%"
@@ -191,6 +191,14 @@ inputs_def:
       minimum: 20
       maximum: 200
     value: 120
+    nullable: true
+
+  - handle: auto_adjust_reference_speed
+    description: "%automatically-adjust-reference-audio-speed-slow-speech-speeds-up\
+      -fast-speech-slows-down%"
+    json_schema:
+      type: boolean
+    value: true
     nullable: true
 
 outputs_def:

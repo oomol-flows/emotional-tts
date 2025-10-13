@@ -21,6 +21,7 @@ class Inputs(typing.TypedDict):
     top_p: float | None
     top_k: int | None
     max_text_tokens_per_segment: int | None
+    auto_adjust_reference_speed: bool | None
 class Outputs(typing.TypedDict):
     audio: typing.NotRequired[str]
 #endregion
@@ -35,9 +36,10 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# Import model downloader utility
+# Import model downloader utility and audio speed adjuster
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.model_downloader import ensure_model_downloaded
+from utils.audio_speed_adjuster import auto_adjust_reference_audio
 
 # Set HuggingFace cache directories to use larger filesystem
 hf_cache_dir = '/oomol-driver/oomol-storage/indextts-checkpoints/hf_cache'
@@ -118,6 +120,7 @@ def main(params: Inputs, context: Context) -> Outputs:
     # Extract parameters with defaults for nullable fields
     text = params["text"]
     spk_audio_prompt = params["spk_audio_prompt"]
+    auto_adjust_reference_speed = params.get("auto_adjust_reference_speed") if params.get("auto_adjust_reference_speed") is not None else False
     emo_control_mode = params.get("emo_control_mode") or "speaker"
     emo_audio_prompt = params.get("emo_audio_prompt")
     emo_weight = params.get("emo_weight") if params.get("emo_weight") is not None else 0.65
@@ -148,6 +151,16 @@ def main(params: Inputs, context: Context) -> Outputs:
     # Validate speaker audio prompt
     if not spk_audio_prompt or not os.path.exists(spk_audio_prompt):
         raise ValueError(f"Speaker audio prompt file not found: {spk_audio_prompt}")
+
+    # Auto-adjust reference audio speed if enabled
+    if auto_adjust_reference_speed:
+        print(">> Auto-adjusting reference audio speed...")
+        adjusted_audio_path, speed_metadata = auto_adjust_reference_audio(
+            spk_audio_prompt,
+            verbose=True
+        )
+        spk_audio_prompt = adjusted_audio_path
+        print(f"   Using adjusted reference: {spk_audio_prompt}")
 
     # Prepare output path
     output_dir = "/oomol-driver/oomol-storage/indextts-output"

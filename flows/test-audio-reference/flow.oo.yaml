@@ -5,8 +5,11 @@ nodes:
     task: self::extract-audio-reference
     inputs_from:
       - handle: audio_file
-        value: "/oomol-driver/oomol-storage/speech_separation_output/mix_speech1_speaker1.wav"
+        value: "/oomol-driver/oomol-storage/speech_separation_output/mix_speech1_speake\
+          r1.wav"
       - handle: start_time
         value: 0
       - handle: duration
         value: 25
+      - handle: auto_detect_vocal
+        value: true

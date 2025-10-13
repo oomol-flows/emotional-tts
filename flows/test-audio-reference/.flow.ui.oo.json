@@ -1,0 +1,13 @@
+{
+  "nodes": {
+    "extract-audio-reference#1": {
+      "contentWidth": 611.3375838723308,
+      "rfNode": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    }
+  }
+}
