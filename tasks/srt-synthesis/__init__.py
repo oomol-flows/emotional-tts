@@ -22,6 +22,7 @@ class Inputs(typing.TypedDict):
     top_k: int | None
     max_text_tokens_per_segment: int | None
     speed_factor: float | None
+    time_sync_mode: typing.Literal["stretch", "crop", "overlay"] | None
 class Outputs(typing.TypedDict):
     audio: typing.NotRequired[str]
     srt_with_metadata: typing.NotRequired[str]
@@ -226,6 +227,7 @@ def main(params: Inputs, context: Context) -> Outputs:
     top_k = params.get("top_k") if params.get("top_k") is not None else 30
     max_text_tokens_per_segment = params.get("max_text_tokens_per_segment") if params.get("max_text_tokens_per_segment") is not None else 120
     speed_factor = params.get("speed_factor") if params.get("speed_factor") is not None else 1.0
+    time_sync_mode = params.get("time_sync_mode") or "stretch"
 
     # Emotion vector from sliders (with defaults)
     emo_vector = [
@@ -331,8 +333,8 @@ def main(params: Inputs, context: Context) -> Outputs:
         if len(audio_segments) == 0:
             raise ValueError("No valid subtitles found to synthesize")
 
-        # Merge audio segments with silence padding
-        print(">> Merging audio segments...")
+        # Merge audio segments with time synchronization
+        print(f">> Merging audio segments (mode: {time_sync_mode})...")
 
         # Get the final end time
         final_end_ms = audio_segments[-1]['end_ms']
@@ -340,13 +342,41 @@ def main(params: Inputs, context: Context) -> Outputs:
         # Create silent base track
         final_audio = AudioSegment.silent(duration=int(final_end_ms))
 
-        # Overlay each audio segment at its start position
+        # Process each audio segment based on sync mode
         for segment in audio_segments:
             start_ms = int(segment['start_ms'])
+            end_ms = int(segment['end_ms'])
+            target_duration_ms = end_ms - start_ms
             audio = segment['audio']
+            audio_duration_ms = len(audio)
 
-            # Overlay the audio at the correct position
-            final_audio = final_audio.overlay(audio, position=start_ms)
+            if time_sync_mode == "stretch":
+                # Stretch or compress audio to match target duration
+                if audio_duration_ms != target_duration_ms:
+                    speed_ratio = audio_duration_ms / target_duration_ms
+                    audio = audio._spawn(audio.raw_data, overrides={
+                        "frame_rate": int(audio.frame_rate * speed_ratio)
+                    }).set_frame_rate(audio.frame_rate)
+                    print(f"   Segment {segment['index']}: stretched {audio_duration_ms}ms -> {target_duration_ms}ms")
+
+                # Insert audio at exact position (non-overlapping)
+                final_audio = final_audio[:start_ms] + audio + final_audio[end_ms:]
+
+            elif time_sync_mode == "crop":
+                # Crop audio if it exceeds target duration
+                if audio_duration_ms > target_duration_ms:
+                    audio = audio[:target_duration_ms]
+                    print(f"   Segment {segment['index']}: cropped {audio_duration_ms}ms -> {target_duration_ms}ms")
+
+                # Insert audio at exact position
+                final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + len(audio):]
+
+            elif time_sync_mode == "overlay":
+                # Original overlay behavior (may cause overlapping)
+                final_audio = final_audio.overlay(audio, position=start_ms)
+
+            else:
+                raise ValueError(f"Invalid time_sync_mode: {time_sync_mode}")
 
         # Prepare output paths
         output_dir = "/oomol-driver/oomol-storage/srt-synthesis-output"

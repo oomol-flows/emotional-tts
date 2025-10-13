@@ -41,7 +41,7 @@ inputs_def:
     nullable: true
 
   - group: Optional
-    collapsed: true
+    collapsed: false
 
   - handle: emo_audio_prompt
     description: "%emotional-reference-audio-used-when-emo_control_mode-is-referenc%"
@@ -207,6 +207,17 @@ inputs_def:
       minimum: 0.5
       maximum: 2.0
     value: 1
+    nullable: true
+
+  - handle: time_sync_mode
+    description: "%time-synchronization-mode-stretch-match-subtitle-timing-crop-trim%"
+    json_schema:
+      type: string
+      enum:
+        - stretch
+        - crop
+        - overlay
+    value: stretch
     nullable: true
 
 outputs_def:

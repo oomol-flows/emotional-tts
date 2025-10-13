@@ -90,8 +90,6 @@ nodes:
         value: 120
       - handle: speed_factor
         value: 1
-      - handle: time_sync_mode
-        value:
     task: self::srt-synthesis
   - node_id: trim-audio#1
     title: "Trim Audio Segment #1"
@@ -131,45 +129,3 @@ nodes:
           - node_id: replace-audio#1
             output_handle: output_video
     task: oomol-preview::video_preview
-  - node_id: indextts#1
-    title: "IndexTTS2 语音合成 #1"
-    inputs_from:
-      - handle: text
-      - handle: spk_audio_prompt
-      - handle: emo_control_mode
-        value: speaker
-      - handle: emo_audio_prompt
-        value: null
-      - handle: emo_weight
-        value: 0.65
-      - handle: emo_text
-        value: null
-      - handle: emo_vec_happy
-        value: 0
-      - handle: emo_vec_angry
-        value: 0
-      - handle: emo_vec_sad
-        value: 0
-      - handle: emo_vec_afraid
-        value: 0
-      - handle: emo_vec_disgusted
-        value: 0
-      - handle: emo_vec_melancholic
-        value: 0
-      - handle: emo_vec_surprised
-        value: 0
-      - handle: emo_vec_calm
-        value: 0
-      - handle: use_random
-        value: false
-      - handle: max_mel_tokens
-        value: 1500
-      - handle: temperature
-        value: 0.8
-      - handle: top_p
-        value: 0.8
-      - handle: top_k
-        value: 30
-      - handle: max_text_tokens_per_segment
-        value: 120
-    task: emotional-tts::indextts
