@@ -155,3 +155,16 @@ nodes:
         nullable: false
         description: Input video file
         value: /oomol-driver/oomol-storage/video/Area22211.MP4
+  - node_id: extract-audio-reference#1
+    title: "Extract Audio Reference #1"
+    inputs_from:
+      - handle: audio_file
+        value: /oomol-driver/oomol-storage/audio/KUN - Jasmine (Official
+          Video)_audio.mp3
+      - handle: auto_detect_vocal
+        value: true
+      - handle: start_time
+        value:
+      - handle: duration
+        value:
+    task: self::extract-audio-reference
