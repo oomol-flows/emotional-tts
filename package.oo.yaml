@@ -45,4 +45,3 @@ dependencies:
   ffmpeg: 0.3.0
   srt-lab: 0.0.4
   oomol-preview: 0.1.7
-  emotional-tts: 0.0.3

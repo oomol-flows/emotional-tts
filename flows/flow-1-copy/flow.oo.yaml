@@ -90,6 +90,8 @@ nodes:
         value: 120
       - handle: speed_factor
         value: 1
+      - handle: time_sync_mode
+        value:
     task: self::srt-synthesis
   - node_id: trim-audio#1
     title: "Trim Audio Segment #1"
