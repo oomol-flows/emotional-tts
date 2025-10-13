@@ -144,18 +144,13 @@ def synthesize_subtitle_entry(
     Returns the path to the generated audio file
 
     Args:
-        target_duration_sec: Expected duration in seconds for speed estimation
+        target_duration_sec: Expected duration in seconds for speed estimation (unused for now to avoid model conflicts)
     """
     # Generate unique output path
     output_path = os.path.join(temp_dir, f"segment_{int(time.time() * 1000000)}.wav")
 
-    # Estimate target speed if duration is provided
-    if target_duration_sec and target_duration_sec > 0:
-        text_length = len(text)
-        # Adjust max_mel_tokens based on target duration
-        # Rough estimate: ~100 characters per second for normal speech
-        estimated_mel_tokens = int(target_duration_sec * 100)
-        max_mel_tokens = min(max(estimated_mel_tokens, 100), max_mel_tokens)
+    # Note: We pass target_duration_sec for future use but don't modify max_mel_tokens
+    # to avoid tensor dimension mismatches in the TTS model
 
     # Prepare inference parameters based on emotion control mode
     use_emo_text = False
