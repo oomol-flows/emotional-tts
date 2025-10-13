@@ -76,8 +76,8 @@ def detect_vocal_segments(audio_path: str, context: Context) -> list:
         # Parameters: min_silence_len (ms), silence_thresh (dBFS)
         nonsilent_segments = detect_nonsilent(
             vocal_audio,
-            min_silence_len=500,  # Minimum 500ms silence to split segments
-            silence_thresh=-40    # Audio below -40dBFS considered silence
+            min_silence_len=1500,  # Minimum 1500ms silence to split segments
+            silence_thresh=-40     # Audio below -40dBFS considered silence
         )
 
         context.logger.info(f"Found {len(nonsilent_segments)} vocal segments")
