@@ -22,7 +22,7 @@ class Inputs(typing.TypedDict):
     top_k: int | None
     max_text_tokens_per_segment: int | None
     speed_factor: float | None
-    time_sync_mode: typing.Literal["stretch", "crop", "overlay"] | None
+    time_sync_mode: typing.Literal["crop", "overlay", "stretch"] | None
 class Outputs(typing.TypedDict):
     audio: typing.NotRequired[str]
     srt_with_metadata: typing.NotRequired[str]
@@ -234,7 +234,7 @@ def main(params: Inputs, context: Context) -> Outputs:
     top_k = params.get("top_k") if params.get("top_k") is not None else 30
     max_text_tokens_per_segment = params.get("max_text_tokens_per_segment") if params.get("max_text_tokens_per_segment") is not None else 120
     speed_factor = params.get("speed_factor") if params.get("speed_factor") is not None else 1.0
-    time_sync_mode = params.get("time_sync_mode") or "stretch"
+    time_sync_mode = params.get("time_sync_mode") or "crop"
 
     # Emotion vector from sliders (with defaults)
     emo_vector = [
@@ -350,10 +350,6 @@ def main(params: Inputs, context: Context) -> Outputs:
         # Create silent base track
         final_audio = AudioSegment.silent(duration=int(final_end_ms))
 
-        # Define speed bounds for natural sounding speech
-        MIN_SPEED_RATIO = 0.75  # Don't slow down more than 25%
-        MAX_SPEED_RATIO = 1.35  # Don't speed up more than 35%
-
         # Process each audio segment based on sync mode
         for segment in audio_segments:
             start_ms = int(segment['start_ms'])
@@ -362,38 +358,7 @@ def main(params: Inputs, context: Context) -> Outputs:
             audio = segment['audio']
             audio_duration_ms = len(audio)
 
-            if time_sync_mode == "stretch":
-                # Stretch or compress audio to match target duration with bounds
-                if audio_duration_ms != target_duration_ms:
-                    speed_ratio = audio_duration_ms / target_duration_ms
-
-                    # Apply speed bounds to prevent unnatural distortion
-                    if speed_ratio < MIN_SPEED_RATIO:
-                        print(f"   Warning: Segment {segment['index']} requires extreme speedup (ratio={speed_ratio:.2f}), clamping to {MIN_SPEED_RATIO}")
-                        speed_ratio = MIN_SPEED_RATIO
-                    elif speed_ratio > MAX_SPEED_RATIO:
-                        print(f"   Warning: Segment {segment['index']} requires extreme slowdown (ratio={speed_ratio:.2f}), clamping to {MAX_SPEED_RATIO}")
-                        speed_ratio = MAX_SPEED_RATIO
-
-                    # Apply speed adjustment using frame rate modification
-                    audio = audio._spawn(audio.raw_data, overrides={
-                        "frame_rate": int(audio.frame_rate * speed_ratio)
-                    }).set_frame_rate(audio.frame_rate)
-
-                    actual_duration_ms = len(audio)
-                    print(f"   Segment {segment['index']}: adjusted {audio_duration_ms}ms -> {actual_duration_ms}ms (target: {target_duration_ms}ms, ratio: {speed_ratio:.2f})")
-
-                # Insert audio at exact position (non-overlapping)
-                # If audio is still longer/shorter due to clamping, adjust placement
-                audio_len = len(audio)
-                if audio_len <= target_duration_ms:
-                    final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + audio_len:]
-                else:
-                    # If still too long after clamping, crop the end
-                    audio = audio[:target_duration_ms]
-                    final_audio = final_audio[:start_ms] + audio + final_audio[end_ms:]
-
-            elif time_sync_mode == "crop":
+            if time_sync_mode == "crop":
                 # Crop audio if it exceeds target duration, with gentle fade
                 if audio_duration_ms > target_duration_ms:
                     # Add 50ms fade out to avoid abrupt cuts
@@ -409,6 +374,18 @@ def main(params: Inputs, context: Context) -> Outputs:
             elif time_sync_mode == "overlay":
                 # Original overlay behavior (may cause overlapping)
                 final_audio = final_audio.overlay(audio, position=start_ms)
+
+            elif time_sync_mode == "stretch":
+                # Legacy stretch mode removed to prevent voice distortion
+                # Fallback to crop behavior
+                if audio_duration_ms > target_duration_ms:
+                    fade_duration = min(50, target_duration_ms // 4)
+                    audio = audio[:target_duration_ms].fade_out(duration=fade_duration)
+                    print(f"   Segment {segment['index']}: cropped {audio_duration_ms}ms -> {target_duration_ms}ms")
+                else:
+                    print(f"   Segment {segment['index']}: kept at {audio_duration_ms}ms")
+
+                final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + len(audio):]
 
             else:
                 raise ValueError(f"Invalid time_sync_mode: {time_sync_mode}")

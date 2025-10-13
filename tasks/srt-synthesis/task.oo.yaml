@@ -210,14 +210,14 @@ inputs_def:
     nullable: true
 
   - handle: time_sync_mode
-    description: "%time-synchronization-mode-stretch-match-subtitle-timing-crop-trim%"
+    description: "%time-synchronization-mode-crop-trim-long-audio-overlay-allow-overlap%"
     json_schema:
       type: string
       enum:
-        - stretch
         - crop
         - overlay
-    value: stretch
+        - stretch
+    value: crop
     nullable: true
 
 outputs_def:

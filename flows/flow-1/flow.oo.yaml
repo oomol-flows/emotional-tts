@@ -4,6 +4,9 @@ nodes:
     inputs_from:
       - handle: video_file
         value: /oomol-driver/oomol-storage/video/Area22211.MP4
+        from_node:
+          - node_id: +value#1
+            output_handle: video_file
       - handle: output_format
         value: mp3
       - handle: audio_quality
@@ -112,8 +115,8 @@ nodes:
     inputs_from:
       - handle: video_file
         from_node:
-          - node_id: extract-audio#1
-            output_handle: audio_file
+          - node_id: +value#1
+            output_handle: video_file
       - handle: audio_file
         from_node:
           - node_id: srt-synthesis#1
@@ -131,3 +134,24 @@ nodes:
           - node_id: replace-audio#1
             output_handle: output_video
     task: oomol-preview::video_preview
+  - node_id: +value#1
+    title: "Value #1"
+    values:
+      - handle: video_file
+        json_schema:
+          type: string
+          ui:widget: file
+          ui:options:
+            filters:
+              - name: Video Files
+                extensions:
+                  - mp4
+                  - avi
+                  - mov
+                  - mkv
+                  - webm
+                  - flv
+            excludeAll: true
+        nullable: false
+        description: Input video file
+        value: /oomol-driver/oomol-storage/video/Area22211.MP4
