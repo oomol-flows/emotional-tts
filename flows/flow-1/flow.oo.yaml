@@ -1,6 +1,6 @@
 nodes:
   - node_id: extract-audio#1
-    title: "Extract Audio from Video #1"
+    title: "%extract-audio-from-video-1%"
     inputs_from:
       - handle: video_file
         value: /oomol-driver/oomol-storage/video/Area22211.MP4
@@ -13,7 +13,7 @@ nodes:
         value: 192
     task: ffmpeg::extract-audio
   - node_id: audio-to-srt#1
-    title: "Audio to SRT #1"
+    title: "%audio-to-srt-1%"
     inputs_from:
       - handle: audio_file
         from_node:
@@ -25,7 +25,7 @@ nodes:
         value: auto
     task: srt-lab::audio-to-srt
   - node_id: srt-translation#1
-    title: "SRT Translation #1"
+    title: "%srt-translation-1%"
     inputs_from:
       - handle: srt_file
         from_node:
@@ -45,7 +45,7 @@ nodes:
           max_tokens: 4096
     task: srt-lab::srt-translation
   - node_id: srt-synthesis#1
-    title: "SRT 字幕合成 #1"
+    title: "%srt-1%"
     inputs_from:
       - handle: srt_file
         from_node:
@@ -99,7 +99,7 @@ nodes:
         value: true
     task: self::srt-synthesis
   - node_id: trim-audio#1
-    title: "Trim Audio Segment #1"
+    title: "%trim-audio-segment-1%"
     inputs_from:
       - handle: audio_file
         from_node:
@@ -113,7 +113,7 @@ nodes:
         value: mp3
     task: ffmpeg::trim-audio
   - node_id: replace-audio#1
-    title: "Replace Audio #1"
+    title: "%replace-audio-1%"
     inputs_from:
       - handle: video_file
         from_node:
@@ -129,7 +129,7 @@ nodes:
         value: 1
     task: ffmpeg::replace-audio
   - node_id: video_preview#1
-    title: "Video preview #1"
+    title: "%video-preview-1%"
     inputs_from:
       - handle: video_path
         from_node:
@@ -137,7 +137,7 @@ nodes:
             output_handle: output_video
     task: oomol-preview::video_preview
   - node_id: +value#1
-    title: "Value #1"
+    title: "%value-1%"
     values:
       - handle: video_file
         json_schema:

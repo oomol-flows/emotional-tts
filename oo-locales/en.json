@@ -27,5 +27,20 @@
   "srt-subtitle-synthesis-1": "SRT Subtitle Synthesis #1",
   "synthesize-speech-from-srt-subtitle-files-with-timing-synchronizat": "Synthesize speech from SRT subtitle files with timing synchronization. Automatically generates audio aligned with subtitle timestamps.",
   "srt-subtitle-file-to-synthesize": "SRT subtitle file to synthesize",
-  "speed-adjustment-factor-1-0-normal-speed": "Speed adjustment factor (1.0 = normal speed)"
+  "speed-adjustment-factor-1-0-normal-speed": "Speed adjustment factor (1.0 = normal speed)",
+  "extract-audio-from-video-1": "Extract Audio from Video #1",
+  "audio-to-srt-1": "Audio to SRT #1",
+  "srt-translation-1": "SRT Translation #1",
+  "srt-1": "SRT Subtitle Composition #1",
+  "trim-audio-segment-1": "Trim Audio Segment #1",
+  "replace-audio-1": "Replace Audio #1",
+  "video-preview-1": "Video preview #1",
+  "value-1": "Value #1",
+  "test-audio-reference-extraction": "Test Audio Reference Extraction",
+  "extract-audio-reference": "Extract Audio Reference",
+  "extract-a-25-second-audio-segment-from-the-input-audio-file-to-u": "Extract a 25-second audio segment from the input audio file to use as reference for voice synthesis or cloning. Automatically detects and extracts vocal parts.",
+  "input-audio-file-to-extract-reference-from": "Input audio file to extract reference from",
+  "automatically-detect-and-extract-vocal-segments-default-true": "Automatically detect and extract vocal segments (default: true)",
+  "start-time-in-seconds-used-when-auto_detect_vocal-is-false-defau": "Start time in seconds (used when auto_detect_vocal is false, default: 0)",
+  "target-duration-in-seconds-default-25": "Target duration in seconds (default: 25)"
 }

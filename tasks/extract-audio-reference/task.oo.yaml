@@ -1,13 +1,13 @@
 inputs_def:
   - handle: audio_file
-    description: "Input audio file to extract reference from"
+    description: "%input-audio-file-to-extract-reference-from%"
     json_schema:
       type: string
       ui:widget: file
     nullable: false
 
   - handle: auto_detect_vocal
-    description: "Automatically detect and extract vocal segments (default: true)"
+    description: "%automatically-detect-and-extract-vocal-segments-default-true%"
     json_schema:
       type: boolean
       default: true
@@ -15,7 +15,7 @@ inputs_def:
     nullable: false
 
   - handle: start_time
-    description: "Start time in seconds (used when auto_detect_vocal is false, default: 0)"
+    description: "%start-time-in-seconds-used-when-auto_detect_vocal-is-false-defau%"
     json_schema:
       type: number
       default: 0
@@ -23,7 +23,7 @@ inputs_def:
     nullable: true
 
   - handle: duration
-    description: "Target duration in seconds (default: 25)"
+    description: "%target-duration-in-seconds-default-25%"
     json_schema:
       type: number
       default: 25
@@ -42,8 +42,6 @@ executor:
     entry: __init__.py
     spawn: false
 
-title: "Extract Audio Reference"
+title: "%extract-audio-reference%"
 icon: ":carbon:music:"
-description: "Extract a 25-second audio segment from the input audio file to use
-  as reference for voice synthesis or cloning. Automatically detects and
-  extracts vocal parts."
+description: "%extract-a-25-second-audio-segment-from-the-input-audio-file-to-u%"

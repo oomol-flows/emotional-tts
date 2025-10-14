@@ -41,7 +41,7 @@ inputs_def:
     nullable: true
 
   - group: Optional
-    collapsed: false
+    collapsed: true
 
   - handle: emo_audio_prompt
     description: "%emotional-reference-audio-used-when-emo_control_mode-is-referenc%"

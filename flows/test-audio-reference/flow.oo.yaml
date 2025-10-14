@@ -1,4 +1,4 @@
-title: Test Audio Reference Extraction
+title: "%test-audio-reference-extraction%"
 
 nodes:
   - node_id: extract-audio-reference#1
