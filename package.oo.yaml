@@ -1,4 +1,4 @@
-version: 0.1.3
+version: 0.1.4
 scripts:
   bootstrap: >
     npm install
@@ -43,4 +43,4 @@ repository: https://github.com/oomol-flows/emotional-tts.git
 releaseNotes: update
 dependencies:
   ffmpeg: 0.3.2
-  srt-lab: 0.0.4
+  srt-lab: 0.0.8
