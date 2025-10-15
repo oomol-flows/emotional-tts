@@ -8,6 +8,14 @@
           "y": 0
         }
       }
+    },
+    "video-speech-translation#1": {
+      "rfNode": {
+        "position": {
+          "x": 75.1594330938114,
+          "y": 349.109851131495
+        }
+      }
     }
   }
 }

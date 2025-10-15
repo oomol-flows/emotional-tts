@@ -24,7 +24,8 @@
       "Read(//root/.oomol-studio/ovm-krun/default/data/**)",
       "Bash(npm cache clean:*)",
       "Bash(npm run dev:*)",
-      "Read(//oomol-driver/oomol-storage/**)"
+      "Read(//oomol-driver/oomol-storage/**)",
+      "Read(//root/.oomol-studio/registry-package-store/srt-lab-0.0.4/tasks/srt-translation/**)"
     ],
     "deny": [],
     "ask": []

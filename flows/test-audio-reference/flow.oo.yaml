@@ -13,3 +13,13 @@ nodes:
         value: 25
       - handle: auto_detect_vocal
         value: true
+  - node_id: video-speech-translation#1
+    title: "视频语音翻译 #1"
+    inputs_from:
+      - handle: video_file
+        value: /oomol-driver/oomol-storage/video/Area22211.MP4
+      - handle: source_language
+        value: auto
+      - handle: target_language
+        value: en
+    subflow: self::video-speech-translation
