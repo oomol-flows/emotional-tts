@@ -29,7 +29,6 @@
   "srt-subtitle-file-to-synthesize": "要合成的 SRT 字幕文件",
   "speed-adjustment-factor-1-0-normal-speed": "速度调整因子（1.0 = 正常速度）",
   "extract-audio-from-video-1": "从视频 #1 提取音频",
-  "audio-to-srt-1": "音频转SRT #1",
   "srt-translation-1": "SRT翻译 #1",
   "srt-1": "SRT 字幕合成 #1",
   "trim-audio-segment-1": "修剪音频片段#1",

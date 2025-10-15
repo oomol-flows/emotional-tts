@@ -13,18 +13,6 @@ nodes:
       - handle: audio_quality
         value: 192
     task: ffmpeg::extract-audio
-  - node_id: audio-to-srt#1
-    title: "%audio-to-srt-1%"
-    inputs_from:
-      - handle: audio_file
-        from_node:
-          - node_id: extract-audio#1
-            output_handle: audio_file
-      - handle: model_size
-        value: medium
-      - handle: language
-        value: auto
-    task: srt-lab::audio-to-srt
   - node_id: srt-translation#1
     title: "%srt-translation-1%"
     inputs_from:
@@ -125,8 +113,8 @@ nodes:
           - input_handle: video_file
       - handle: audio_file
         from_node:
-          - node_id: srt-synthesis#1
-            output_handle: audio
+          - node_id: merge-multiple-audio#1
+            output_handle: merged_audio
       - handle: audio_handling
         value: replace
       - handle: audio_volume
@@ -141,6 +129,56 @@ nodes:
           - node_id: srt-translation#1
             output_handle: srt_file
     task: ffmpeg::merge-audio-video-subtitle
+  - node_id: split-by-vocal#1
+    title: "按人声分离 #1"
+    inputs_from:
+      - handle: output_dir
+        value:
+      - handle: output_base_name
+        value:
+      - handle: audio_file
+        from_node:
+          - node_id: extract-audio#1
+            output_handle: audio_file
+    task: vocal-split::split-by-vocal
+  - node_id: audio-to-srt#1
+    title: "音频转 SRT #1"
+    inputs_from:
+      - handle: audio_file
+        from_node:
+          - node_id: split-by-vocal#1
+            output_handle: vocals
+      - handle: model_size
+        value: base
+      - handle: language
+        value: auto
+    task: srt-lab::audio-to-srt
+  - node_id: merge-multiple-audio#1
+    title: "Merge Multiple Audio #1"
+    inputs_from:
+      - handle: main_audio
+        from_node:
+          - node_id: srt-synthesis#1
+            output_handle: audio
+      - handle: background_audio
+        from_node:
+          - node_id: split-by-vocal#1
+            output_handle: no_vocals
+      - handle: merge_mode
+        value: overlay
+      - handle: main_volume
+        value: 1
+      - handle: background_volume
+        value: 1
+      - handle: background_sync_method
+        value: loop
+      - handle: fade_in_duration
+        value: 0
+      - handle: fade_out_duration
+        value: 0
+      - handle: output_format
+        value: mp3
+    task: ffmpeg::merge-multiple-audio
 title: "%video-speech-translation%"
 description: "%this-subflow-translates-video-speech-from-one-language-to-anothe%"
 icon: ":carbon:translate:"

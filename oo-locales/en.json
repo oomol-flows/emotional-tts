@@ -29,7 +29,6 @@
   "srt-subtitle-file-to-synthesize": "SRT subtitle file to synthesize",
   "speed-adjustment-factor-1-0-normal-speed": "Speed adjustment factor (1.0 = normal speed)",
   "extract-audio-from-video-1": "Extract Audio from Video #1",
-  "audio-to-srt-1": "Audio to SRT #1",
   "srt-translation-1": "SRT Translation #1",
   "srt-1": "SRT Subtitle Composition #1",
   "trim-audio-segment-1": "Trim Audio Segment #1",

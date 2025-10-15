@@ -1,18 +1,6 @@
 title: "%test-audio-reference-extraction%"
 
 nodes:
-  - node_id: extract-audio-reference#1
-    task: self::extract-audio-reference
-    inputs_from:
-      - handle: audio_file
-        value: "/oomol-driver/oomol-storage/speech_separation_output/mix_speech1_speake\
-          r1.wav"
-      - handle: start_time
-        value: 0
-      - handle: duration
-        value: 25
-      - handle: auto_detect_vocal
-        value: true
   - node_id: video-speech-translation#1
     title: "视频语音翻译 #1"
     inputs_from:
