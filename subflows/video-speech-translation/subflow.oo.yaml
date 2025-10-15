@@ -96,8 +96,8 @@ nodes:
     inputs_from:
       - handle: audio_file
         from_node:
-          - node_id: extract-audio#1
-            output_handle: audio_file
+          - node_id: split-by-vocal#1
+            output_handle: vocals
       - handle: start_time
         value: 0
       - handle: duration
@@ -149,7 +149,7 @@ nodes:
           - node_id: split-by-vocal#1
             output_handle: vocals
       - handle: model_size
-        value: base
+        value: medium
       - handle: language
         value: auto
     task: srt-lab::audio-to-srt
