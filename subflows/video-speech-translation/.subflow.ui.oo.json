@@ -4,7 +4,7 @@
       "contentWidth": 350,
       "rfNode": {
         "position": {
-          "x": 481,
+          "x": 486,
           "y": 253
         }
       }
@@ -13,16 +13,16 @@
       "contentWidth": 350,
       "rfNode": {
         "position": {
-          "x": 897,
+          "x": 902,
           "y": 51.5
         }
       }
     },
     "srt-translation#1": {
-      "contentWidth": 350,
+      "contentWidth": 478.06028730834714,
       "rfNode": {
         "position": {
-          "x": 1313,
+          "x": 1318,
           "y": 0
         }
       }
@@ -30,7 +30,7 @@
     "srt-synthesis#1": {
       "rfNode": {
         "position": {
-          "x": 1729,
+          "x": 1734,
           "y": 226
         }
       },
@@ -46,7 +46,7 @@
       "contentWidth": 350,
       "rfNode": {
         "position": {
-          "x": 1313,
+          "x": 1318,
           "y": 441
         }
       }
@@ -54,26 +54,26 @@
     "replace-audio#1": {
       "rfNode": {
         "position": {
-          "x": 2215,
+          "x": 2220,
           "y": 124.25
         }
       }
-    },
-    "video_preview#1": {
-      "contentWidth": 450,
-      "rfNode": {
-        "position": {
-          "x": 2701,
-          "y": 212.25
-        }
-      }
-    },
-    "+value#1": {
-      "contentWidth": 415,
+    }
+  },
+  "pseudoNodes": {
+    "input": {
       "rfNode": {
         "position": {
           "x": 0,
-          "y": 212.25
+          "y": 223.25
+        }
+      }
+    },
+    "output": {
+      "rfNode": {
+        "position": {
+          "x": 2706,
+          "y": 223.25
         }
       }
     }

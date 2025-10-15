@@ -1,4 +1,4 @@
-version: 0.1.1
+version: 0.1.2
 scripts:
   bootstrap: >
     npm install
@@ -42,6 +42,5 @@ description: "%transform-any-text-into-natural-emotionally-expressive-speech-wi%
 repository: https://github.com/oomol-flows/emotional-tts.git
 releaseNotes: update
 dependencies:
-  ffmpeg: 0.3.0
+  ffmpeg: 0.3.2
   srt-lab: 0.0.4
-  oomol-preview: 0.1.7

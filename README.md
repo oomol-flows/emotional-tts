@@ -38,6 +38,18 @@ Perfect for content creators, audiobook producers, accessibility applications, o
 - **Speed Adjustment:** Optionally adjust speech speed to better fit subtitle timing
 - **Metadata Output:** Generates an annotated SRT file with audio duration information
 
+### Video Speech Translation (Subflow)
+
+**What it does:** Translates video speech from one language to another while preserving the original speaker's voice characteristics. This is a complete end-to-end pipeline that automatically processes your video.
+
+**Key Features:**
+
+- **Complete Pipeline:** Extract audio → Transcribe → Translate → Synthesize → Replace audio
+- **Voice Preservation:** Maintains the original speaker's voice timbre in the target language
+- **Multi-language Support:** Supports all major languages (English, Chinese, Spanish, French, German, Japanese, Korean, Russian, Arabic, Portuguese, Italian, Dutch, Polish, Turkish, Vietnamese, Thai, Indonesian, Hindi)
+- **Auto-sync:** Automatically synchronizes translated speech with original video timing
+- **One-click Operation:** Upload your video, select languages, and get a translated version
+
 ## Use Cases
 
 ### 1. Content Creation
@@ -67,6 +79,12 @@ Perfect for content creators, audiobook producers, accessibility applications, o
 - **NEW:** Add narration to silent videos using subtitle files
 - **NEW:** Create dubbed versions with customized voices
 - **NEW:** Generate audio tracks synchronized with existing subtitles
+
+### 6. Video Localization & Translation
+- **NEW:** Translate video content to different languages while keeping the original voice
+- **NEW:** Create multilingual versions of educational videos or tutorials
+- **NEW:** Localize marketing videos for international audiences
+- **NEW:** Generate dubbed versions of interviews or documentaries
 
 ## How to Use
 
@@ -117,6 +135,34 @@ Perfect for content creators, audiobook producers, accessibility applications, o
 - Generated audio segments are placed at their correct timestamps
 - Silence is automatically added between segments
 - The final audio duration matches the last subtitle's end time
+
+### Video Speech Translation Usage
+
+1. **Prepare Your Input:**
+   - **Video File:** Any video file (MP4, AVI, MOV, MKV, WebM, FLV)
+   - **Language Settings:**
+     - Source language (or select "Auto Detect")
+     - Target language for translation
+
+2. **Add the Subflow to Your Workflow:**
+   - Drag the "Video Speech Translation" subflow into your OOMOL workflow
+   - Upload your video file
+   - Select source and target languages
+
+3. **How It Works Behind the Scenes:**
+   - **Step 1:** Extracts audio from the video
+   - **Step 2:** Transcribes the audio to SRT subtitles
+   - **Step 3:** Translates subtitles to target language
+   - **Step 4:** Generates a voice sample from the original audio (first 25 seconds)
+   - **Step 5:** Synthesizes translated speech using the cloned voice
+   - **Step 6:** Replaces the original audio track with translated speech
+
+4. **Run Your Flow:**
+   - The subflow will automatically execute all steps
+   - Output: A video file with translated speech in the target language
+   - The original speaker's voice characteristics are preserved
+
+**Use Case Example:** You have an English tutorial video and want to create a Chinese version. The subflow will automatically extract audio, transcribe it, translate to Chinese, clone the speaker's voice, generate Chinese speech that sounds like the original speaker, and replace the audio track - all in one automated pipeline!
 
 ### Emotion Control Options
 
@@ -291,6 +337,16 @@ For commercial licensing inquiries, contact: indexspeech@bilibili.com
 5. **File Output Block** → Save the metadata SRT file (optional)
 
 **Use Case Example:** You have a video with subtitles but no audio. Upload the SRT file, provide a voice sample, and generate a synchronized narration track that matches the subtitle timing perfectly!
+
+### Video Speech Translation Workflow
+
+1. **File Input Block** → Upload your source video file (e.g., English.mp4)
+2. **Video Speech Translation Subflow** → Connect the video input
+   - Set source language to "Auto Detect" or specific language
+   - Set target language (e.g., Chinese, Spanish, etc.)
+3. **File Output Block** → Save the translated video
+
+**Use Case Example:** You have a 10-minute English tutorial video and want to create versions in Chinese, Spanish, and French. Use this subflow three times with different target languages, and you'll get three localized versions with the same speaker's voice speaking each language naturally!
 
 ## License
 

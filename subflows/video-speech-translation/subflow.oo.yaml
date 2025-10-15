@@ -1,0 +1,277 @@
+nodes:
+  - node_id: extract-audio#1
+    title: "%extract-audio-from-video-1%"
+    inputs_from:
+      - handle: video_file
+        value: /oomol-driver/oomol-storage/video/Area22211.MP4
+        from_flow:
+          - input_handle: video_file
+        from_node:
+          []
+      - handle: output_format
+        value: mp3
+      - handle: audio_quality
+        value: 192
+    task: ffmpeg::extract-audio
+  - node_id: audio-to-srt#1
+    title: "%audio-to-srt-1%"
+    inputs_from:
+      - handle: audio_file
+        from_node:
+          - node_id: extract-audio#1
+            output_handle: audio_file
+      - handle: model_size
+        value: medium
+      - handle: language
+        value: auto
+    task: srt-lab::audio-to-srt
+  - node_id: srt-translation#1
+    title: "%srt-translation-1%"
+    inputs_from:
+      - handle: srt_file
+        from_node:
+          - node_id: audio-to-srt#1
+            output_handle: srt_file
+      - handle: source_language
+        value: auto
+        from_flow:
+          - input_handle: source_language
+      - handle: target_language
+        value: en
+        from_flow:
+          - input_handle: target_language
+      - handle: translation_style
+        value: null
+      - handle: llm
+        value:
+          model: kimi-k2-turbo-preview
+          temperature: 0.5
+          top_p: 1
+          max_tokens: 262144
+    task: srt-lab::srt-translation
+  - node_id: srt-synthesis#1
+    title: "%srt-1%"
+    inputs_from:
+      - handle: srt_file
+        from_node:
+          - node_id: srt-translation#1
+            output_handle: srt_file
+      - handle: spk_audio_prompt
+        from_node:
+          - node_id: trim-audio#1
+            output_handle: trimmed_audio
+      - handle: emo_control_mode
+        value: speaker
+      - handle: emo_audio_prompt
+        value: null
+      - handle: emo_weight
+        value: 0.65
+      - handle: emo_text
+        value: null
+      - handle: emo_vec_happy
+        value: 0
+      - handle: emo_vec_angry
+        value: 0
+      - handle: emo_vec_sad
+        value: 0
+      - handle: emo_vec_afraid
+        value: 0
+      - handle: emo_vec_disgusted
+        value: 0
+      - handle: emo_vec_melancholic
+        value: 0
+      - handle: emo_vec_surprised
+        value: 0
+      - handle: emo_vec_calm
+        value: 0
+      - handle: use_random
+        value: false
+      - handle: max_mel_tokens
+        value: 1500
+      - handle: temperature
+        value: 0.3
+      - handle: top_p
+        value: 0.9
+      - handle: top_k
+        value: 30
+      - handle: max_text_tokens_per_segment
+        value: 120
+      - handle: speed_factor
+        value: 1
+      - handle: time_sync_mode
+        value:
+      - handle: auto_adjust_reference_speed
+        value: true
+    task: self::srt-synthesis
+  - node_id: trim-audio#1
+    title: "%trim-audio-segment-1%"
+    inputs_from:
+      - handle: audio_file
+        from_node:
+          - node_id: extract-audio#1
+            output_handle: audio_file
+      - handle: start_time
+        value: 0
+      - handle: duration
+        value: 25
+      - handle: output_format
+        value: mp3
+    task: ffmpeg::trim-audio
+  - node_id: replace-audio#1
+    title: "%replace-audio-1%"
+    inputs_from:
+      - handle: video_file
+        from_flow:
+          - input_handle: video_file
+        from_node:
+          []
+      - handle: audio_file
+        from_node:
+          - node_id: srt-synthesis#1
+            output_handle: audio
+      - handle: sync_method
+        value: stretch_audio
+      - handle: audio_volume
+        value: 1
+    task: ffmpeg::replace-audio
+title: "%video-speech-translation%"
+description: "%this-subflow-translates-video-speech-from-one-language-to-anothe%"
+icon: ":carbon:translate:"
+inputs_def:
+  - handle: video_file
+    description: "%input-video-file-to-be-processed-for-speech-translation%"
+    json_schema:
+      type: string
+      ui:widget: file
+      ui:options:
+        filters:
+          - name: Video Files
+            extensions:
+              - mp4
+              - avi
+              - mov
+              - mkv
+              - webm
+              - flv
+        excludeAll: true
+    nullable: false
+    executor_name: python
+  - handle: source_language
+    description: "%source-language-of-the-video-speech-auto-detect-if-unknown%"
+    json_schema:
+      type: string
+      enum:
+        - auto
+        - en
+        - zh
+        - es
+        - fr
+        - de
+        - ja
+        - ko
+        - ru
+        - ar
+        - pt
+        - it
+        - nl
+        - pl
+        - tr
+        - vi
+        - th
+        - id
+        - hi
+      ui:options:
+        enumNames:
+          - Auto Detect
+          - English
+          - Chinese
+          - Spanish
+          - French
+          - German
+          - Japanese
+          - Korean
+          - Russian
+          - Arabic
+          - Portuguese
+          - Italian
+          - Dutch
+          - Polish
+          - Turkish
+          - Vietnamese
+          - Thai
+          - Indonesian
+          - Hindi
+    value: auto
+    nullable: false
+    executor_name: python
+  - handle: target_language
+    description: "%target-language-for-speech-translation-and-synthesis%"
+    json_schema:
+      type: string
+      enum:
+        - en
+        - zh
+        - es
+        - fr
+        - de
+        - ja
+        - ko
+        - ru
+        - ar
+        - pt
+        - it
+        - nl
+        - pl
+        - tr
+        - vi
+        - th
+        - id
+        - hi
+      ui:options:
+        enumNames:
+          - English
+          - Chinese
+          - Spanish
+          - French
+          - German
+          - Japanese
+          - Korean
+          - Russian
+          - Arabic
+          - Portuguese
+          - Italian
+          - Dutch
+          - Polish
+          - Turkish
+          - Vietnamese
+          - Thai
+          - Indonesian
+          - Hindi
+    value: en
+    nullable: false
+    executor_name: python
+outputs_def:
+  - handle: output_video
+    json_schema:
+      type: string
+      ui:widget: save
+      ui:options:
+        filters:
+          - name: MP4 Files
+            extensions:
+              - mp4
+          - name: MKV Files
+            extensions:
+              - mkv
+          - name: AVI Files
+            extensions:
+              - avi
+        excludeAll: true
+    nullable: false
+    description: Video file with translated speech audio track
+    executor_name: python
+outputs_from:
+  - handle: output_video
+    from_node:
+      - node_id: replace-audio#1
+        output_handle: output_video
