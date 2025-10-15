@@ -117,23 +117,30 @@ nodes:
       - handle: output_format
         value: mp3
     task: ffmpeg::trim-audio
-  - node_id: replace-audio#1
-    title: "%replace-audio-1%"
+  - node_id: merge-audio-video-subtitle#1
+    title: "合并音频、视频、字幕 #1"
     inputs_from:
       - handle: video_file
         from_flow:
           - input_handle: video_file
-        from_node:
-          []
       - handle: audio_file
         from_node:
           - node_id: srt-synthesis#1
             output_handle: audio
-      - handle: sync_method
-        value: stretch_audio
+      - handle: audio_handling
+        value: replace
       - handle: audio_volume
         value: 1
-    task: ffmpeg::replace-audio
+      - handle: original_audio_volume
+        value: null
+      - handle: sync_method
+        value: stretch_audio
+      - handle: subtitle_file
+        value: null
+        from_node:
+          - node_id: srt-translation#1
+            output_handle: srt_file
+    task: ffmpeg::merge-audio-video-subtitle
 title: "%video-speech-translation%"
 description: "%this-subflow-translates-video-speech-from-one-language-to-anothe%"
 icon: ":carbon:translate:"
@@ -273,5 +280,5 @@ outputs_def:
 outputs_from:
   - handle: output_video
     from_node:
-      - node_id: replace-audio#1
-        output_handle: output_video
+      - node_id: merge-audio-video-subtitle#1
+        output_handle: merged_video

@@ -33,7 +33,6 @@
   "srt-translation-1": "SRT Translation #1",
   "srt-1": "SRT Subtitle Composition #1",
   "trim-audio-segment-1": "Trim Audio Segment #1",
-  "replace-audio-1": "Replace Audio #1",
   "test-audio-reference-extraction": "Test Audio Reference Extraction",
   "extract-audio-reference": "Extract Audio Reference",
   "extract-a-25-second-audio-segment-from-the-input-audio-file-to-u": "Extract a 25-second audio segment from the input audio file to use as reference for voice synthesis or cloning. Automatically detects and extracts vocal parts.",
