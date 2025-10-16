@@ -1,0 +1,17 @@
+title: "Test SRT Synthesis with Language Detection"
+
+nodes:
+  - node_id: srt-synthesis#1
+    title: "SRT Synthesis Test"
+    task: self::srt-synthesis
+    inputs_from:
+      - handle: srt_file
+      - handle: spk_audio_prompt
+      - handle: emo_control_mode
+        value: speaker
+      - handle: time_sync_mode
+        value: crop
+      - handle: auto_adjust_reference_speed
+        value: true
+      - handle: speed_factor
+        value: 1.0

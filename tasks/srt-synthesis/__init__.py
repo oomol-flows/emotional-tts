@@ -2,7 +2,8 @@
 import typing
 class Inputs(typing.TypedDict):
     srt_file: str
-    spk_audio_prompt: str
+    reference_audio: str
+    reference_audio_offset_ms: int | None
     emo_control_mode: typing.Literal["speaker", "reference", "vector", "text"] | None
     emo_audio_prompt: str | None
     emo_weight: float | None
@@ -23,7 +24,6 @@ class Inputs(typing.TypedDict):
     max_text_tokens_per_segment: int | None
     speed_factor: float | None
     time_sync_mode: typing.Literal["crop", "overlay", "stretch"] | None
-    auto_adjust_reference_speed: bool | None
 class Outputs(typing.TypedDict):
     audio: typing.NotRequired[str]
     srt_with_metadata: typing.NotRequired[str]
@@ -41,10 +41,22 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# Import model downloader utility and audio speed adjuster
+# Import model downloader utility, audio speed adjuster, and language duration estimator
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.model_downloader import ensure_model_downloaded
-from utils.audio_speed_adjuster import auto_adjust_reference_audio
+from utils.audio_speed_adjuster import auto_adjust_reference_audio, analyze_speech_rate
+from utils.language_duration_estimator import (
+    detect_language,
+    calculate_optimal_mel_tokens,
+    get_trim_strategy,
+    suggest_speed_factor,
+    estimate_base_duration
+)
+from utils.audio_segment_extractor import (
+    extract_audio_segment,
+    validate_full_audio_duration,
+    analyze_segment_quality
+)
 
 # Set HuggingFace cache directory
 os.environ['HF_HUB_CACHE'] = '/oomol-driver/oomol-storage/indextts-checkpoints/hf_cache'
@@ -124,7 +136,7 @@ def parse_srt_timestamp(timestamp_str: str) -> float:
 
     return total_seconds
 
-def detect_silence_boundaries(audio_segment: AudioSegment, silence_thresh_db: float = -40.0, min_silence_len_ms: int = 100) -> tuple:
+def detect_silence_boundaries(audio_segment: AudioSegment, silence_thresh_db: float = -40.0, min_silence_len_ms: int = 100, language: str = "other") -> tuple:
     """
     Detect leading and trailing silence in an audio segment
     Returns (leading_silence_ms, trailing_silence_ms)
@@ -183,14 +195,17 @@ def detect_silence_boundaries(audio_segment: AudioSegment, silence_thresh_db: fl
 
     return leading_silence_ms, trailing_silence_ms
 
-def smart_trim_audio(audio_segment: AudioSegment, target_duration_ms: int, segment_index: int) -> AudioSegment:
+def smart_trim_audio(audio_segment: AudioSegment, target_duration_ms: int, segment_index: int, text: str = "", language: str = "other") -> AudioSegment:
     """
     Intelligently trim audio to match target duration by prioritizing silence removal
+    Uses language-specific trimming strategies for better results
 
     Args:
         audio_segment: The audio to trim
         target_duration_ms: Target duration in milliseconds
         segment_index: Segment index for logging
+        text: Text content for language detection
+        language: Language code (if already detected)
 
     Returns:
         Trimmed audio segment
@@ -201,28 +216,33 @@ def smart_trim_audio(audio_segment: AudioSegment, target_duration_ms: int, segme
         # No trimming needed
         return audio_segment
 
+    # Detect language if not provided
+    if not language or language == "other":
+        language = detect_language(text) if text else "other"
+
+    # Get language-specific trimming strategy
+    strategy = get_trim_strategy(language)
+
     # Calculate how much we need to trim
     excess_ms = audio_duration_ms - target_duration_ms
 
-    # Detect silence at beginning and end
-    leading_silence_ms, trailing_silence_ms = detect_silence_boundaries(audio_segment)
+    # Detect silence at beginning and end with language-specific parameters
+    leading_silence_ms, trailing_silence_ms = detect_silence_boundaries(
+        audio_segment,
+        silence_thresh_db=strategy["silence_threshold_db"],
+        min_silence_len_ms=strategy["min_silence_len_ms"],
+        language=language
+    )
     total_silence_ms = leading_silence_ms + trailing_silence_ms
 
-    print(f"   Segment {segment_index}: detected {leading_silence_ms}ms leading silence, {trailing_silence_ms}ms trailing silence")
+    print(f"   Segment {segment_index} [{language.upper()}]: detected {leading_silence_ms}ms leading silence, {trailing_silence_ms}ms trailing silence")
 
     # Strategy: Remove silence first, then trim from edges if needed
     if total_silence_ms >= excess_ms:
         # We have enough silence to remove
-        # Distribute trimming proportionally between leading and trailing silence
-        if total_silence_ms > 0:
-            leading_trim_ratio = leading_silence_ms / total_silence_ms
-            trailing_trim_ratio = trailing_silence_ms / total_silence_ms
-
-            leading_trim_ms = int(excess_ms * leading_trim_ratio)
-            trailing_trim_ms = int(excess_ms * trailing_trim_ratio)
-        else:
-            leading_trim_ms = 0
-            trailing_trim_ms = 0
+        # Use language-specific bias for trimming distribution
+        leading_trim_ms = int(excess_ms * strategy["leading_bias"])
+        trailing_trim_ms = int(excess_ms * strategy["trailing_bias"])
 
         # Ensure we don't trim more silence than exists
         leading_trim_ms = min(leading_trim_ms, leading_silence_ms)
@@ -246,19 +266,20 @@ def smart_trim_audio(audio_segment: AudioSegment, target_duration_ms: int, segme
         remaining_excess_ms = excess_ms - total_silence_ms
 
         if remaining_excess_ms > 0:
-            # Trim equally from both ends with fade to avoid clicks
-            edge_trim_ms = remaining_excess_ms // 2
-            fade_duration_ms = min(50, edge_trim_ms // 2)
+            # Trim with language-specific bias and fade
+            leading_edge_trim = int(remaining_excess_ms * strategy["leading_bias"])
+            trailing_edge_trim = int(remaining_excess_ms * strategy["trailing_bias"])
+            fade_duration_ms = min(strategy["edge_fade_ms"], min(leading_edge_trim, trailing_edge_trim) // 2)
 
             # Trim and add fades
-            if edge_trim_ms > 0:
-                trimmed_audio = trimmed_audio[edge_trim_ms:-edge_trim_ms]
+            if leading_edge_trim > 0 and trailing_edge_trim > 0:
+                trimmed_audio = trimmed_audio[leading_edge_trim:-trailing_edge_trim if trailing_edge_trim > 0 else None]
 
             # Apply fade only if duration is valid and audio is long enough
             if fade_duration_ms > 0 and len(trimmed_audio) > fade_duration_ms * 2:
                 trimmed_audio = trimmed_audio.fade_in(duration=fade_duration_ms).fade_out(duration=fade_duration_ms)
 
-            print(f"   Segment {segment_index}: removed all silence ({total_silence_ms}ms), then trimmed {edge_trim_ms}ms from each edge with fade")
+            print(f"   Segment {segment_index}: removed all silence ({total_silence_ms}ms), then trimmed {leading_edge_trim}ms from start, {trailing_edge_trim}ms from end with {fade_duration_ms}ms fade")
         else:
             print(f"   Segment {segment_index}: removed {leading_silence_ms}ms leading + {trailing_silence_ms}ms trailing silence")
 
@@ -280,20 +301,37 @@ def synthesize_subtitle_entry(
     top_k: int,
     max_text_tokens_per_segment: int,
     temp_dir: str,
-    target_duration_sec: float | None = None
-) -> str:
+    target_duration_sec: float | None = None,
+    reference_speed_ratio: float = 1.0
+) -> tuple[str, str]:
     """
     Synthesize audio for a single subtitle entry
-    Returns the path to the generated audio file
+    Returns the path to the generated audio file and detected language
 
     Args:
-        target_duration_sec: Expected duration in seconds for speed estimation (unused for now to avoid model conflicts)
+        target_duration_sec: Expected duration in seconds for dynamic max_mel_tokens adjustment
+        reference_speed_ratio: Speed ratio from reference audio analysis
     """
     # Generate unique output path
     output_path = os.path.join(temp_dir, f"segment_{int(time.time() * 1000000)}.wav")
 
-    # Note: We pass target_duration_sec for future use but don't modify max_mel_tokens
-    # to avoid tensor dimension mismatches in the TTS model
+    # Detect language for this text segment
+    language = detect_language(text)
+
+    # Calculate optimal max_mel_tokens based on target duration and language
+    if target_duration_sec and target_duration_sec > 0:
+        optimal_mel_tokens = calculate_optimal_mel_tokens(
+            text=text,
+            target_duration=target_duration_sec,
+            language=language,
+            reference_speed_ratio=reference_speed_ratio
+        )
+        # Use the calculated optimal value
+        actual_max_mel_tokens = optimal_mel_tokens
+        print(f"   Language: {language.upper()}, Target: {target_duration_sec:.2f}s, Optimal mel_tokens: {optimal_mel_tokens}")
+    else:
+        # Use default value
+        actual_max_mel_tokens = max_mel_tokens
 
     # Prepare inference parameters based on emotion control mode
     use_emo_text = False
@@ -337,13 +375,13 @@ def synthesize_subtitle_entry(
         temperature=temperature,
         top_p=top_p,
         top_k=top_k if top_k > 0 else None,
-        max_mel_tokens=max_mel_tokens,
+        max_mel_tokens=actual_max_mel_tokens,  # Use language-aware optimized value
         length_penalty=0.0,
         num_beams=3,
         repetition_penalty=10.0
     )
 
-    return result_path
+    return result_path, language
 
 def main(params: Inputs, context: Context) -> Outputs:
     """
@@ -365,8 +403,8 @@ def main(params: Inputs, context: Context) -> Outputs:
 
     # Extract parameters with defaults for nullable fields
     srt_file = params["srt_file"]
-    spk_audio_prompt = params["spk_audio_prompt"]
-    auto_adjust_reference_speed = params.get("auto_adjust_reference_speed") if params.get("auto_adjust_reference_speed") is not None else False
+    reference_audio = params["reference_audio"]
+    reference_audio_offset_ms = params.get("reference_audio_offset_ms") if params.get("reference_audio_offset_ms") is not None else 0
     emo_control_mode = params.get("emo_control_mode") or "speaker"
     emo_audio_prompt = params.get("emo_audio_prompt")
     emo_weight = params.get("emo_weight") if params.get("emo_weight") is not None else 0.65
@@ -396,21 +434,11 @@ def main(params: Inputs, context: Context) -> Outputs:
     if not srt_file or not os.path.exists(srt_file):
         raise ValueError(f"SRT file not found: {srt_file}")
 
-    # Validate speaker audio prompt
-    if not spk_audio_prompt or not os.path.exists(spk_audio_prompt):
-        raise ValueError(f"Speaker audio prompt file not found: {spk_audio_prompt}")
+    # Validate reference audio
+    if not reference_audio or not os.path.exists(reference_audio):
+        raise ValueError(f"Reference audio file not found: {reference_audio}")
 
-    # Auto-adjust reference audio speed if enabled
-    if auto_adjust_reference_speed:
-        print(">> Auto-adjusting reference audio speed...")
-        adjusted_audio_path, speed_metadata = auto_adjust_reference_audio(
-            spk_audio_prompt,
-            verbose=True
-        )
-        spk_audio_prompt = adjusted_audio_path
-        print(f"   Using adjusted reference: {spk_audio_prompt}")
-
-    # Parse SRT file
+    # Parse SRT file first to get max timestamp for validation
     print(f">> Parsing SRT file: {srt_file}")
     try:
         subs = pysrt.open(srt_file, encoding='utf-8')
@@ -421,6 +449,29 @@ def main(params: Inputs, context: Context) -> Outputs:
         raise ValueError("SRT file is empty or contains no valid subtitles")
 
     print(f">> Found {len(subs)} subtitle entries")
+
+    # Get max SRT timestamp for validation
+    max_srt_time_sec = max(
+        sub.end.hours * 3600 + sub.end.minutes * 60 + sub.end.seconds + sub.end.milliseconds / 1000.0
+        for sub in subs
+    )
+
+    # Validate full audio duration (always enabled now)
+    print(">> Validating reference audio duration...")
+    is_valid, validation_msg = validate_full_audio_duration(
+        reference_audio,
+        max_srt_time_sec,
+        tolerance_sec=5.0
+    )
+    print(f"   {validation_msg}")
+
+    if not is_valid:
+        raise ValueError(
+            f"Reference audio duration validation failed: {validation_msg}. "
+            "Please ensure the audio file matches the SRT duration."
+        )
+
+    print(f"   Time offset: {reference_audio_offset_ms}ms")
 
     # Create temporary directory for audio segments
     temp_dir = tempfile.mkdtemp(prefix="srt_synthesis_")
@@ -445,11 +496,36 @@ def main(params: Inputs, context: Context) -> Outputs:
             end_time_sec = sub.end.hours * 3600 + sub.end.minutes * 60 + sub.end.seconds + sub.end.milliseconds / 1000.0
             duration_sec = end_time_sec - start_time_sec
 
+            # Extract reference audio segment from full audio
+            try:
+                segment_reference_audio = extract_audio_segment(
+                    full_audio_path=reference_audio,
+                    start_time_sec=start_time_sec,
+                    end_time_sec=end_time_sec,
+                    offset_ms=reference_audio_offset_ms,
+                    output_path=None,  # Auto-generate temp file
+                    min_duration_sec=0.5,
+                    max_duration_sec=10.0,
+                    padding_ms=100
+                )
+
+                # Validate segment quality
+                is_good, quality_msg = analyze_segment_quality(segment_reference_audio)
+                if not is_good:
+                    print(f"   Warning: Extracted segment quality issue: {quality_msg}, using full audio fallback")
+                    segment_reference_audio = reference_audio
+                else:
+                    print(f"   Extracted reference segment: {quality_msg}")
+
+            except Exception as e:
+                print(f"   Warning: Failed to extract segment: {e}, using full audio fallback")
+                segment_reference_audio = reference_audio
+
             # Synthesize audio for this subtitle
-            audio_path = synthesize_subtitle_entry(
+            audio_path, detected_language = synthesize_subtitle_entry(
                 tts=tts,
                 text=text,
-                spk_audio_prompt=spk_audio_prompt,
+                spk_audio_prompt=segment_reference_audio,
                 emo_control_mode=emo_control_mode,
                 emo_audio_prompt=emo_audio_prompt,
                 emo_weight=emo_weight,
@@ -462,15 +538,29 @@ def main(params: Inputs, context: Context) -> Outputs:
                 top_k=top_k,
                 max_text_tokens_per_segment=max_text_tokens_per_segment,
                 temp_dir=temp_dir,
-                target_duration_sec=duration_sec
+                target_duration_sec=duration_sec,
+                reference_speed_ratio=1.0  # Use default as each segment has its own reference
             )
 
             # Load audio segment
             audio_segment = AudioSegment.from_wav(audio_path)
+            initial_audio_duration_ms = len(audio_segment)
 
-            # Apply speed factor if needed
-            if speed_factor != 1.0:
-                audio_segment = audio_segment.speedup(playback_speed=speed_factor)
+            # Calculate language-aware speed adjustment
+            estimated_duration = initial_audio_duration_ms / 1000.0
+            suggested_factor, speed_message = suggest_speed_factor(
+                estimated_duration=estimated_duration,
+                target_duration=duration_sec,
+                language=detected_language,
+                max_speed_change=0.25
+            )
+
+            # Apply combined speed factor (user-defined + auto-suggested)
+            combined_speed_factor = speed_factor * suggested_factor
+
+            if combined_speed_factor != 1.0:
+                print(f"   Speed adjustment: {speed_message} (factor: {combined_speed_factor:.2f}x)")
+                audio_segment = audio_segment.speedup(playback_speed=combined_speed_factor)
 
             audio_duration_ms = len(audio_segment)
 
@@ -480,14 +570,15 @@ def main(params: Inputs, context: Context) -> Outputs:
                 'end_ms': end_time_sec * 1000,
                 'audio': audio_segment,
                 'text': text,
-                'index': idx + 1
+                'index': idx + 1,
+                'language': detected_language
             })
 
             # Add metadata for output SRT
             metadata_lines.append(f"{idx + 1}")
             metadata_lines.append(f"{sub.start} --> {sub.end}")
             metadata_lines.append(f"{text}")
-            metadata_lines.append(f"# Audio duration: {audio_duration_ms}ms, Target duration: {duration_sec * 1000}ms")
+            metadata_lines.append(f"# Language: {detected_language.upper()}, Audio duration: {audio_duration_ms}ms, Target: {duration_sec * 1000}ms, Speed factor: {combined_speed_factor:.2f}x")
             metadata_lines.append("")
 
             print(f"   Generated audio: {audio_duration_ms}ms (target: {duration_sec * 1000}ms)")
@@ -513,8 +604,14 @@ def main(params: Inputs, context: Context) -> Outputs:
             audio_duration_ms = len(audio)
 
             if time_sync_mode == "crop":
-                # Smart crop: prioritize removing silence at edges
-                audio = smart_trim_audio(audio, target_duration_ms, segment['index'])
+                # Smart crop with language-aware strategy
+                audio = smart_trim_audio(
+                    audio,
+                    target_duration_ms,
+                    segment['index'],
+                    text=segment['text'],
+                    language=segment['language']
+                )
 
                 # Insert audio at exact position
                 final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + len(audio):]
@@ -525,8 +622,14 @@ def main(params: Inputs, context: Context) -> Outputs:
 
             elif time_sync_mode == "stretch":
                 # Legacy stretch mode removed to prevent voice distortion
-                # Fallback to smart crop behavior
-                audio = smart_trim_audio(audio, target_duration_ms, segment['index'])
+                # Fallback to smart crop behavior with language awareness
+                audio = smart_trim_audio(
+                    audio,
+                    target_duration_ms,
+                    segment['index'],
+                    text=segment['text'],
+                    language=segment['language']
+                )
                 final_audio = final_audio[:start_ms] + audio + final_audio[start_ms + len(audio):]
 
             else:

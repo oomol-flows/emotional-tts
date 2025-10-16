@@ -12,8 +12,8 @@ inputs_def:
         excludeAll: true
     nullable: false
 
-  - handle: spk_audio_prompt
-    description: "%voice-timbre-reference-audio-for-speaker-cloning%"
+  - handle: reference_audio
+    description: "%full-audio-file-segments-will-be-auto-extracted-based-on-srt-timestamps%"
     json_schema:
       type: string
       ui:widget: file
@@ -27,6 +27,16 @@ inputs_def:
               - m4a
         excludeAll: true
     nullable: false
+
+  - handle: reference_audio_offset_ms
+    description: "%time-offset-adjustment-for-reference-audio-in-milliseconds-posit\
+      ive-delays-negative-advances%"
+    json_schema:
+      type: integer
+      minimum: -5000
+      maximum: 5000
+    value: 0
+    nullable: true
 
   - handle: emo_control_mode
     description: "%emotion-control-method-speaker-same-as-voice-reference-use-emo_a%"
@@ -219,11 +229,6 @@ inputs_def:
         - stretch
     value: crop
     nullable: true
-  - handle: auto_adjust_reference_speed
-    json_schema:
-      type: boolean
-    value: true
-    nullable: true
 
 outputs_def:
   - handle: audio
@@ -245,3 +250,5 @@ executor:
 title: "%srt-subtitle-synthesis%"
 icon: ":carbon:closed-caption:"
 description: "%synthesize-speech-from-srt-subtitle-files-with-timing-synchronizat%"
+ui:
+  default_width: 639.916817197106
