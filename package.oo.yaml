@@ -43,5 +43,5 @@ repository: https://github.com/oomol-flows/emotional-tts.git
 releaseNotes: update
 dependencies:
   ffmpeg: 0.3.5
-  srt-lab: 0.0.8
+  srt-lab: 0.0.9
   vocal-split: 0.1.5

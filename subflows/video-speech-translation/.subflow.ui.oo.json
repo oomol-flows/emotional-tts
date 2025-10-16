@@ -5,7 +5,7 @@
       "rfNode": {
         "position": {
           "x": 486,
-          "y": 387.75
+          "y": 89.5
         }
       }
     },
@@ -13,8 +13,8 @@
       "contentWidth": 350,
       "rfNode": {
         "position": {
-          "x": 1834,
-          "y": 422.5
+          "x": 1784,
+          "y": 481.5
         }
       }
     },
@@ -22,7 +22,7 @@
       "rfNode": {
         "position": {
           "x": 2250,
-          "y": 54
+          "y": 307.75
         }
       },
       "sections": {
@@ -33,21 +33,12 @@
         }
       }
     },
-    "trim-audio#1": {
-      "contentWidth": 350,
-      "rfNode": {
-        "position": {
-          "x": 1526.6480784549356,
-          "y": 54
-        }
-      }
-    },
     "merge-audio-video-subtitle#1": {
       "contentWidth": 350,
       "rfNode": {
         "position": {
           "x": 3222,
-          "y": 525.25
+          "y": 594.25
         }
       }
     },
@@ -56,16 +47,16 @@
       "rfNode": {
         "position": {
           "x": 902,
-          "y": 575.75
+          "y": 76
         }
       }
     },
     "audio-to-srt#1": {
-      "contentWidth": 450,
+      "contentWidth": 350,
       "rfNode": {
         "position": {
           "x": 1318,
-          "y": 474
+          "y": 0
         }
       }
     },
@@ -73,7 +64,16 @@
       "rfNode": {
         "position": {
           "x": 2736,
-          "y": 0
+          "y": 567.25
+        }
+      }
+    },
+    "extract-vocal-audio-segment#1": {
+      "contentWidth": 450,
+      "rfNode": {
+        "position": {
+          "x": 1734,
+          "y": 35.5
         }
       }
     }
@@ -83,7 +83,7 @@
       "rfNode": {
         "position": {
           "x": 0,
-          "y": 869.25
+          "y": 254.5
         }
       }
     },
@@ -91,7 +91,7 @@
       "rfNode": {
         "position": {
           "x": 3638,
-          "y": 664.75
+          "y": 733.75
         }
       }
     }

@@ -32,7 +32,7 @@ nodes:
         value: null
       - handle: llm
         value:
-          model: kimi-k2-turbo-preview
+          model: accounts/fireworks/models/kimi-k2-instruct-0905
           temperature: 0.5
           top_p: 1
           max_tokens: 262144
@@ -46,8 +46,8 @@ nodes:
             output_handle: srt_file
       - handle: spk_audio_prompt
         from_node:
-          - node_id: trim-audio#1
-            output_handle: trimmed_audio
+          - node_id: extract-vocal-audio-segment#1
+            output_handle: extracted_audio
       - handle: emo_control_mode
         value: speaker
       - handle: emo_audio_prompt
@@ -91,20 +91,6 @@ nodes:
       - handle: auto_adjust_reference_speed
         value: true
     task: self::srt-synthesis
-  - node_id: trim-audio#1
-    title: "%trim-audio-segment-1%"
-    inputs_from:
-      - handle: audio_file
-        from_node:
-          - node_id: split-by-vocal#1
-            output_handle: vocals
-      - handle: start_time
-        value: 0
-      - handle: duration
-        value: 25
-      - handle: output_format
-        value: mp3
-    task: ffmpeg::trim-audio
   - node_id: merge-audio-video-subtitle#1
     title: "合并音频、视频、字幕 #1"
     inputs_from:
@@ -179,6 +165,22 @@ nodes:
       - handle: output_format
         value: mp3
     task: ffmpeg::merge-multiple-audio
+  - node_id: extract-vocal-audio-segment#1
+    title: "提取人声音频片段 #1"
+    inputs_from:
+      - handle: srt_file
+        from_node:
+          - node_id: audio-to-srt#1
+            output_handle: srt_file
+      - handle: audio_file
+        from_node:
+          - node_id: split-by-vocal#1
+            output_handle: vocals
+      - handle: target_duration
+        value: 25
+      - handle: selection_method
+        value: densest
+    task: srt-lab::extract-vocal-audio-segment
 title: "%video-speech-translation%"
 description: "%this-subflow-translates-video-speech-from-one-language-to-anothe%"
 icon: ":carbon:translate:"
